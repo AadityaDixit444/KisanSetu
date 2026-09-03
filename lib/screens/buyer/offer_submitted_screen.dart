@@ -57,7 +57,10 @@ class OfferSubmittedScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Offer Submitted'),
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SafeArea(
         child: ListView(
