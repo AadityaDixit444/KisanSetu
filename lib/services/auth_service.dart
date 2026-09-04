@@ -11,8 +11,8 @@ class AuthService {
     required String email,
     required String password,
     Map<String, dynamic>? data,
-  }) {
-    return _client.auth.signUp(
+  }) async {
+    return await _client.auth.signUp(
       email: email,
       password: password,
       data: data,
@@ -22,14 +22,18 @@ class AuthService {
   Future<AuthResponse> signInWithEmailPassword({
     required String email,
     required String password,
-  }) {
-    return _client.auth.signInWithPassword(
+  }) async {
+    return await _client.auth.signInWithPassword(
       email: email,
       password: password,
     );
   }
 
-  Future<void> signOut() {
-    return _client.auth.signOut();
+  Future<AuthResponse> signInAnonymously() async {
+    return await _client.auth.signInAnonymously();
+  }
+
+  Future<void> signOut() async {
+    await _client.auth.signOut();
   }
 }
