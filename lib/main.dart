@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/role_selection_screen.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://pdfmhiwulroqdwzmjzfw.supabase.co',
+    publishableKey: 'sb_publishable_4PbJLGc9CwALqwm3i65lkA_w8jxuPAC',
+  );
+
   runApp(const KisanSetuApp());
 }
 
