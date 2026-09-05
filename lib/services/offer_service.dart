@@ -87,4 +87,30 @@ class OfferService {
 
     return List<Map<String, dynamic>>.from(response);
   }
+
+  Future<void> acceptOffer({required String offerId}) async {
+    final user = _client.auth.currentUser;
+
+    if (user == null) {
+      throw Exception('No authenticated user found');
+    }
+
+    await _client
+        .from('offers')
+        .update({'status': 'accepted'})
+        .eq('id', offerId);
+  }
+
+  Future<void> declineOffer({required String offerId}) async {
+    final user = _client.auth.currentUser;
+
+    if (user == null) {
+      throw Exception('No authenticated user found');
+    }
+
+    await _client
+        .from('offers')
+        .update({'status': 'rejected'})
+        .eq('id', offerId);
+  }
 }

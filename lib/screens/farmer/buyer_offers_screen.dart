@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/offer_service.dart';
 import '../../theme/app_colors.dart';
-import 'confirm_deal_screen.dart';
 
 class BuyerOffersScreen extends StatefulWidget {
   const BuyerOffersScreen({super.key});
@@ -16,6 +15,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   List<Map<String, dynamic>> _offers = [];
+  final Set<String> _processingOfferIds = {};
 
   @override
   void initState() {
@@ -67,7 +67,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
         return 'Accepted';
       case 'rejected':
       case 'declined':
-        return 'Declined';
+        return 'Rejected';
       default:
         return 'Pending';
     }
@@ -77,7 +77,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
     switch (status) {
       case 'Accepted':
         return AppColors.primary;
-      case 'Declined':
+      case 'Rejected':
         return AppColors.error;
       default:
         return AppColors.tertiary;
@@ -88,30 +88,89 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
     switch (status) {
       case 'Accepted':
         return AppColors.primaryContainer;
-      case 'Declined':
+      case 'Rejected':
         return AppColors.error.withValues(alpha: 0.15);
       default:
         return AppColors.tertiaryContainer;
     }
   }
 
-  void _onDecline(BuildContext context, String buyerName) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Offer from $buyerName declined.'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+  Future<void> _onDecline(String offerId) async {
+    if (_processingOfferIds.contains(offerId)) return;
+
+    setState(() {
+      _processingOfferIds.add(offerId);
+    });
+
+    try {
+      await _offerService.declineOffer(offerId: offerId);
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Offer declined'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      await _fetchFarmerOffers();
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to decline offer. Please try again.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _processingOfferIds.remove(offerId);
+        });
+      }
+    }
   }
 
-  void _onAcceptOffer(BuildContext context, Map<String, dynamic> offer) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const ConfirmDealScreen(),
-      ),
-    );
+  Future<void> _onAcceptOffer(String offerId) async {
+    if (_processingOfferIds.contains(offerId)) return;
+
+    setState(() {
+      _processingOfferIds.add(offerId);
+    });
+
+    try {
+      await _offerService.acceptOffer(offerId: offerId);
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Offer accepted successfully'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      await _fetchFarmerOffers();
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to accept offer. Please try again.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _processingOfferIds.remove(offerId);
+        });
+      }
+    }
   }
 
   @override
@@ -252,6 +311,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
                           )
                         else
                           ..._offers.map((offer) {
+                            final offerId = offer['id']?.toString() ?? '';
                             final lot = offer['lots'] as Map<String, dynamic>?;
                             final profile = offer['profiles'] as Map<String, dynamic>?;
 
@@ -260,6 +320,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
                             final demand = _formatQuantity(offer['quantity']);
                             final offeredPrice = _formatPrice(offer['offer_price']);
                             final status = _formatStatus(offer['status']);
+                            final isProcessing = _processingOfferIds.contains(offerId);
 
                             return Card(
                               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -350,15 +411,24 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
                                       children: [
                                         Expanded(
                                           child: OutlinedButton(
-                                            onPressed: () => _onDecline(context, buyerName),
+                                            onPressed: isProcessing ? null : () => _onDecline(offerId),
                                             child: const Text('Decline'),
                                           ),
                                         ),
                                         const SizedBox(width: 12),
                                         Expanded(
                                           child: ElevatedButton(
-                                            onPressed: () => _onAcceptOffer(context, offer),
-                                            child: const Text('Accept Offer'),
+                                            onPressed: isProcessing ? null : () => _onAcceptOffer(offerId),
+                                            child: isProcessing
+                                                ? const SizedBox(
+                                                    width: 20,
+                                                    height: 20,
+                                                    child: CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                      color: AppColors.onPrimary,
+                                                    ),
+                                                  )
+                                                : const Text('Accept Offer'),
                                           ),
                                         ),
                                       ],
