@@ -3,6 +3,7 @@ import '../../theme/app_colors.dart';
 import 'offer_review_screen.dart';
 
 class MakeOfferScreen extends StatefulWidget {
+  final String lotId;
   final String crop;
   final String quantity;
   final String askingPrice;
@@ -10,6 +11,7 @@ class MakeOfferScreen extends StatefulWidget {
 
   const MakeOfferScreen({
     super.key,
+    required this.lotId,
     required this.crop,
     required this.quantity,
     required this.askingPrice,
@@ -21,30 +23,40 @@ class MakeOfferScreen extends StatefulWidget {
 }
 
 class _MakeOfferScreenState extends State<MakeOfferScreen> {
-  late final TextEditingController _priceController;
-  late final TextEditingController _quantityController;
+  final _formKey = GlobalKey<FormState>();
+  final _offerPriceController = TextEditingController();
+  final _quantityController = TextEditingController();
+
+  double _totalEstimatedValue = 0.0;
 
   @override
   void initState() {
     super.initState();
-    final numericPrice = widget.askingPrice.replaceAll(RegExp(r'[^0-9]'), '');
-    final numericQty = widget.quantity.replaceAll(RegExp(r'[^0-9]'), '');
+    final numericQty = widget.quantity.replaceAll(RegExp(r'[^0-9.]'), '');
+    _quantityController.text = numericQty;
 
-    _priceController = TextEditingController(text: numericPrice);
-    _quantityController = TextEditingController(text: numericQty);
+    final numericPrice = widget.askingPrice.replaceAll(RegExp(r'[^0-9.]'), '');
+    _offerPriceController.text = numericPrice;
+
+    _calculateTotal();
+
+    _offerPriceController.addListener(_calculateTotal);
+    _quantityController.addListener(_calculateTotal);
   }
 
   @override
   void dispose() {
-    _priceController.dispose();
+    _offerPriceController.dispose();
     _quantityController.dispose();
     super.dispose();
   }
 
-  double get _estimatedTotal {
-    final price = double.tryParse(_priceController.text.trim()) ?? 0.0;
+  void _calculateTotal() {
+    final price = double.tryParse(_offerPriceController.text.trim()) ?? 0.0;
     final qty = double.tryParse(_quantityController.text.trim()) ?? 0.0;
-    return price * qty;
+    setState(() {
+      _totalEstimatedValue = price * qty;
+    });
   }
 
   String _formatCurrency(double amount) {
@@ -54,17 +66,19 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
         )}';
   }
 
-  void _onReviewOffer(BuildContext context) {
-    final offerPrice = _priceController.text.trim();
-    final quantity = _quantityController.text.trim();
+  void _onReviewOffer() {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => OfferReviewScreen(
+          lotId: widget.lotId,
           crop: widget.crop,
-          quantity: quantity,
-          offerPrice: offerPrice,
+          quantity: _quantityController.text.trim(),
+          offerPrice: _offerPriceController.text.trim(),
           location: widget.location,
           askingPrice: widget.askingPrice,
         ),
@@ -81,324 +95,179 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
         title: const Text('Make an Offer'),
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          children: [
-            // Lot Summary Card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Lot Summary',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryContainer,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'Active Lot',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.onPrimaryContainer,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Text(
-                          widget.crop,
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              'Current Asking Price',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontSize: 11,
-                                color: AppColors.outline,
-                              ),
-                            ),
-                            Text(
-                              widget.askingPrice,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Available Quantity',
-                                  style: theme.textTheme.bodyMedium?.copyWith(fontSize: 11),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  widget.quantity,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.onSurface,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            height: 28,
-                            width: 1,
-                            margin: const EdgeInsets.symmetric(horizontal: 8),
-                            color: AppColors.outlineVariant,
-                          ),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Lot Location',
-                                  style: theme.textTheme.bodyMedium?.copyWith(fontSize: 11),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  widget.location,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.onSurface,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Offer Input Card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Your Counter Offer',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Your Offer Price (per qtl)',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: _priceController,
-                      keyboardType: TextInputType.number,
-                      onChanged: (_) => setState(() {}),
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(
-                          Icons.currency_rupee_rounded,
-                          size: 18,
-                          color: AppColors.primary,
-                        ),
-                        hintText: 'e.g. 2400',
-                        filled: true,
-                        fillColor: AppColors.background,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 14,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppColors.outlineVariant),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppColors.outlineVariant),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            children: [
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                color: AppColors.primaryContainer.withValues(alpha: 0.5),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Target Produce Summary',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.onPrimaryContainer,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Quantity You Want (qtl)',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: _quantityController,
-                      keyboardType: TextInputType.number,
-                      onChanged: (_) => setState(() {}),
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(
-                          Icons.scale_rounded,
-                          size: 18,
-                          color: AppColors.primary,
-                        ),
-                        hintText: 'e.g. 100',
-                        filled: true,
-                        fillColor: AppColors.background,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 14,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppColors.outlineVariant),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppColors.outlineVariant),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryContainer.withValues(alpha: 0.4),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      child: Row(
+                      const SizedBox(height: 8),
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Estimated Offer Value',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.onPrimaryContainer,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${_quantityController.text.trim().isEmpty ? "0" : _quantityController.text.trim()} qtl at ${_priceController.text.trim().isEmpty ? "₹0" : "₹${_priceController.text.trim()}"}/qtl',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontSize: 11,
-                                  color: AppColors.onPrimaryContainer,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            widget.crop,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                           Text(
-                            _formatCurrency(_estimatedTotal),
+                            'Asking: ${widget.askingPrice}',
                             style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w600,
                               color: AppColors.primary,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Negotiation Note Card
-            Card(
-              color: AppColors.background,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(color: AppColors.outlineVariant, width: 0.8),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.handshake_outlined,
-                      size: 20,
-                      color: AppColors.secondary,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'You can negotiate with the farmer through KisanSetu once this offer is submitted.',
+                      const SizedBox(height: 4),
+                      Text(
+                        '${widget.location} • Max Available: ${widget.quantity}',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          fontSize: 12,
                           color: AppColors.onSurfaceVariant,
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Review Offer Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ElevatedButton.icon(
-                onPressed: () => _onReviewOffer(context),
-                icon: const Icon(Icons.arrow_forward_rounded),
-                label: const Text('Review Offer'),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Bid Specifications',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _offerPriceController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Your Offer Price (₹/qtl)',
+                            hintText: 'Enter amount per quintal',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.currency_rupee_rounded),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please enter your offer price';
+                            }
+                            final parsed = double.tryParse(value.trim());
+                            if (parsed == null || parsed <= 0) {
+                              return 'Enter a valid price greater than 0';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _quantityController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Required Quantity (Quintals)',
+                            hintText: 'Enter quantity you wish to buy',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.scale_outlined),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please enter quantity';
+                            }
+                            final parsed = double.tryParse(value.trim());
+                            if (parsed == null || parsed <= 0) {
+                              return 'Enter a valid quantity greater than 0';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-          ],
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Estimated Total Value',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: AppColors.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _formatCurrency(_totalEstimatedValue),
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Icon(
+                          Icons.calculate_outlined,
+                          size: 30,
+                          color: AppColors.outline,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _onReviewOffer,
+                    child: const Text(
+                      'Review Offer',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
