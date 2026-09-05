@@ -113,4 +113,49 @@ class OfferService {
         .update({'status': 'rejected'})
         .eq('id', offerId);
   }
+
+  Future<void> createTransactionFromOffer({
+    required String offerId,
+  }) async {
+    final user = _client.auth.currentUser;
+
+    if (user == null) {
+      throw Exception('No authenticated user found');
+    }
+
+    final offer = await _client
+        .from('offers')
+        .select('''
+          lot_id,
+          buyer_id,
+          offer_price,
+          quantity,
+          lots (
+            farmer_id
+          )
+        ''')
+        .eq('id', offerId)
+        .single();
+
+    final lot = offer['lots'] as Map<String, dynamic>?;
+    final farmerId = lot?['farmer_id']?.toString();
+
+    if (farmerId == null || farmerId != user.id) {
+      throw Exception('You are not authorized to create this transaction');
+    }
+
+    final offerPrice = (offer['offer_price'] as num).toDouble();
+    final quantity = (offer['quantity'] as num).toDouble();
+    final totalAmount = offerPrice * quantity;
+
+    await _client.from('transactions').insert({
+      'lot_id': offer['lot_id'],
+      'buyer_id': offer['buyer_id'],
+      'farmer_id': farmerId,
+      'agreed_price': offerPrice,
+      'quantity': quantity,
+      'total_amount': totalAmount,
+      'status': 'confirmed',
+    });
+  }
 }

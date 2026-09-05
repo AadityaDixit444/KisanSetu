@@ -143,6 +143,8 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
 
     try {
       await _offerService.acceptOffer(offerId: offerId);
+      await _offerService.createTransactionFromOffer(offerId: offerId);
+
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
