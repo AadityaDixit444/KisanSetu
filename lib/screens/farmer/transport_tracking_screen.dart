@@ -3,7 +3,47 @@ import '../../theme/app_colors.dart';
 import 'transaction_screen.dart';
 
 class TransportTrackingScreen extends StatelessWidget {
-  const TransportTrackingScreen({super.key});
+  final String vehicleType;
+  final double transportCost;
+  final DateTime pickupDate;
+  final String pickupTime;
+
+  const TransportTrackingScreen({
+    super.key,
+    required this.vehicleType,
+    required this.transportCost,
+    required this.pickupDate,
+    required this.pickupTime,
+  });
+
+  String _monthName(int month) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    return months[month - 1];
+  }
+
+  String _formatPickupDate() {
+    return '${pickupDate.day.toString().padLeft(2, '0')} '
+        '${_monthName(pickupDate.month)} '
+        '${pickupDate.year}, $pickupTime';
+  }
+
+  String _formatCurrency(double amount) {
+    return '₹${amount.toStringAsFixed(0)}';
+  }
 
   void _onViewDeliveryDetails(BuildContext context) {
     Navigator.push(
@@ -98,7 +138,9 @@ class TransportTrackingScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: AppColors.background,
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: AppColors.outlineVariant),
+                            border: Border.all(
+                              color: AppColors.outlineVariant,
+                            ),
                           ),
                           child: const Text(
                             'KS-LOT-1001',
@@ -148,10 +190,10 @@ class TransportTrackingScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    const _DetailRow(
+                    _DetailRow(
                       icon: Icons.rv_hookup_rounded,
                       label: 'Vehicle',
-                      value: '14-Wheeler Truck',
+                      value: vehicleType,
                     ),
                     const SizedBox(height: 10),
                     const _DetailRow(
@@ -160,17 +202,17 @@ class TransportTrackingScreen extends StatelessWidget {
                       value: 'Rajesh Transport Services',
                     ),
                     const SizedBox(height: 10),
-                    const _DetailRow(
+                    _DetailRow(
                       icon: Icons.currency_rupee_rounded,
                       label: 'Estimated Cost',
-                      value: '₹11,000',
+                      value: _formatCurrency(transportCost),
                       valueColor: AppColors.primary,
                     ),
                     const SizedBox(height: 10),
-                    const _DetailRow(
+                    _DetailRow(
                       icon: Icons.schedule_rounded,
                       label: 'Expected Pickup',
-                      value: '04 Sep 2026, 8:00 AM',
+                      value: _formatPickupDate(),
                     ),
                   ],
                 ),
@@ -237,6 +279,7 @@ class TransportTrackingScreen extends StatelessWidget {
                 label: const Text('View Delivery Details'),
               ),
             ),
+
             const SizedBox(height: 20),
           ],
         ),
@@ -262,7 +305,11 @@ class _SummaryRow extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppColors.outline),
+        Icon(
+          icon,
+          size: 16,
+          color: AppColors.outline,
+        ),
         const SizedBox(width: 8),
         Text(
           '$label: ',
@@ -303,7 +350,11 @@ class _DetailRow extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(icon, size: 18, color: AppColors.outline),
+        Icon(
+          icon,
+          size: 18,
+          color: AppColors.outline,
+        ),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
@@ -372,7 +423,9 @@ class _TimelineStepTile extends StatelessWidget {
               Container(
                 width: 2,
                 height: 28,
-                color: isCompleted ? AppColors.primary : AppColors.outlineVariant,
+                color: isCompleted
+                    ? AppColors.primary
+                    : AppColors.outlineVariant,
               ),
           ],
         ),
@@ -384,13 +437,18 @@ class _TimelineStepTile extends StatelessWidget {
               Text(
                 title,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: isCompleted ? FontWeight.w700 : FontWeight.w500,
-                  color: isCompleted ? AppColors.onSurface : AppColors.outline,
+                  fontWeight:
+                      isCompleted ? FontWeight.w700 : FontWeight.w500,
+                  color:
+                      isCompleted ? AppColors.onSurface : AppColors.outline,
                 ),
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 2,
+                ),
                 decoration: BoxDecoration(
                   color: isCompleted
                       ? AppColors.primaryContainer

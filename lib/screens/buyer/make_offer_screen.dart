@@ -8,6 +8,7 @@ class MakeOfferScreen extends StatefulWidget {
   final String quantity;
   final String askingPrice;
   final String location;
+  final String? demandId;
 
   const MakeOfferScreen({
     super.key,
@@ -16,6 +17,7 @@ class MakeOfferScreen extends StatefulWidget {
     required this.quantity,
     required this.askingPrice,
     required this.location,
+    this.demandId,
   });
 
   @override
@@ -24,19 +26,17 @@ class MakeOfferScreen extends StatefulWidget {
 
 class _MakeOfferScreenState extends State<MakeOfferScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _offerPriceController = TextEditingController();
-  final _quantityController = TextEditingController();
+
+  late final TextEditingController _offerPriceController;
+  late final TextEditingController _quantityController;
 
   double _totalEstimatedValue = 0.0;
 
   @override
   void initState() {
     super.initState();
-    final numericQty = widget.quantity.replaceAll(RegExp(r'[^0-9.]'), '');
-    _quantityController.text = numericQty;
-
-    final numericPrice = widget.askingPrice.replaceAll(RegExp(r'[^0-9.]'), '');
-    _offerPriceController.text = numericPrice;
+    _offerPriceController = TextEditingController(text: _sanitizeNumeric(widget.askingPrice));
+    _quantityController = TextEditingController(text: _sanitizeNumeric(widget.quantity));
 
     _calculateTotal();
 
@@ -51,9 +51,19 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
     super.dispose();
   }
 
+  String _sanitizeNumeric(String value) {
+    return value.replaceAll(RegExp(r'[^0-9.]'), '');
+  }
+
+  double _parseDouble(dynamic val) {
+    if (val == null) return 0.0;
+    if (val is num) return val.toDouble();
+    return double.tryParse(val.toString()) ?? 0.0;
+  }
+
   void _calculateTotal() {
-    final price = double.tryParse(_offerPriceController.text.trim()) ?? 0.0;
-    final qty = double.tryParse(_quantityController.text.trim()) ?? 0.0;
+    final price = _parseDouble(_offerPriceController.text.trim());
+    final qty = _parseDouble(_quantityController.text.trim());
     setState(() {
       _totalEstimatedValue = price * qty;
     });
@@ -67,9 +77,7 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
   }
 
   void _onReviewOffer() {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     Navigator.push(
       context,
@@ -81,6 +89,7 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
           offerPrice: _offerPriceController.text.trim(),
           location: widget.location,
           askingPrice: widget.askingPrice,
+          demandId: widget.demandId,
         ),
       ),
     );
@@ -89,6 +98,7 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final availableQuantity = _parseDouble(_sanitizeNumeric(widget.quantity));
 
     return Scaffold(
       appBar: AppBar(
@@ -97,159 +107,158 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
       body: SafeArea(
         child: Form(
           key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
             children: [
-              Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                color: AppColors.primaryContainer.withValues(alpha: 0.5),
-                child: Padding(
+              Expanded(
+                child: ListView(
                   padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Target Produce Summary',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.onPrimaryContainer,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            widget.crop,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
+                  children: [
+                    // Lot Summary Card
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  widget.crop,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryContainer,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'Produce Lot',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          Text(
-                            'Asking: ${widget.askingPrice}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${widget.location} • Max Available: ${widget.quantity}',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: AppColors.onSurfaceVariant,
+                            const Divider(height: 20, color: AppColors.outlineVariant),
+                            _LotInfoRow(label: 'Available Quantity', value: '${widget.quantity} qtl'),
+                            const SizedBox(height: 6),
+                            _LotInfoRow(label: 'Farmer Asking Price', value: '₹${widget.askingPrice}/qtl'),
+                            const SizedBox(height: 6),
+                            _LotInfoRow(label: 'Produce Location', value: widget.location),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Bid Specifications',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _offerPriceController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Your Offer Price (₹/qtl)',
-                            hintText: 'Enter amount per quintal',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.currency_rupee_rounded),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter your offer price';
-                            }
-                            final parsed = double.tryParse(value.trim());
-                            if (parsed == null || parsed <= 0) {
-                              return 'Enter a valid price greater than 0';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _quantityController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Required Quantity (Quintals)',
-                            hintText: 'Enter quantity you wish to buy',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.scale_outlined),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter quantity';
-                            }
-                            final parsed = double.tryParse(value.trim());
-                            if (parsed == null || parsed <= 0) {
-                              return 'Enter a valid quantity greater than 0';
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
+
+                    const SizedBox(height: 16),
+
+                    // Offer Configuration Card
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Estimated Total Value',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: AppColors.onSurfaceVariant,
+                              'Offer Terms',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _offerPriceController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: const InputDecoration(
+                                labelText: 'Offered Price (₹/qtl)',
+                                prefixIcon: Icon(Icons.currency_rupee_rounded),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Offer price is required';
+                                }
+                                final val = double.tryParse(value.trim());
+                                if (val == null || val <= 0) {
+                                  return 'Enter a valid price greater than 0';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 14),
+                            TextFormField(
+                              controller: _quantityController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: InputDecoration(
+                                labelText: 'Offered Quantity (qtl)',
+                                helperText: 'Max available: ${widget.quantity} qtl',
+                                prefixIcon: const Icon(Icons.scale_rounded),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Quantity is required';
+                                }
+                                final val = double.tryParse(value.trim());
+                                if (val == null || val <= 0) {
+                                  return 'Enter a valid quantity greater than 0';
+                                }
+                                if (val > availableQuantity) {
+                                  return 'Cannot exceed available lot quantity (${widget.quantity} qtl)';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Calculated Total Summary Card
+                    Card(
+                      color: AppColors.primaryContainer.withValues(alpha: 0.3),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Estimated Contract Total',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                             Text(
                               _formatCurrency(_totalEstimatedValue),
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w900,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
                                 color: AppColors.primary,
                               ),
                             ),
                           ],
                         ),
-                        const Icon(
-                          Icons.calculate_outlined,
-                          size: 30,
-                          color: AppColors.outline,
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 24),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+
+              // Bottom Action Bar
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    top: BorderSide(color: AppColors.outlineVariant),
+                  ),
+                ),
                 child: SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -265,11 +274,39 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _LotInfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _LotInfoRow({
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+      ],
     );
   }
 }

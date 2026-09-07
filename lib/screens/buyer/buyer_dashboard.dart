@@ -25,6 +25,12 @@ class BuyerDashboard extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        tooltip: 'Back',
+        onPressed: () => Navigator.pop(context),
+      ),
+
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

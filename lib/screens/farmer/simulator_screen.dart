@@ -1,252 +1,625 @@
 import 'package:flutter/material.dart';
+import '../../services/market_price_service.dart';
 import '../../theme/app_colors.dart';
 
-class SimulatorScreen extends StatelessWidget {
+class SimulatorScreen extends StatefulWidget {
   const SimulatorScreen({super.key});
+
+  @override
+  State<SimulatorScreen> createState() => _SimulatorScreenState();
+}
+
+class _SimulatorScreenState extends State<SimulatorScreen> {
+  final MarketPriceService _marketPriceService = MarketPriceService();
+  final TextEditingController _quantityController =
+      TextEditingController(text: '100');
+
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  final String _crop = 'Wheat';
+  double _stockQuantity = 100.0;
+
+  double? _currentMandiPrice;
+  double _priceChangePercent = 0.0;
+  String _demandLevel = 'Moderate';
+  String _marketName = 'Meerut Mandi';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchMarketBaseline();
+  }
+
+  @override
+  void dispose() {
+    _quantityController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchMarketBaseline() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final records = await _marketPriceService.getMarketPrices();
+      if (!mounted) return;
+
+      final wheatRecord = records.firstWhere(
+        (item) {
+          final crop = item['crop']?.toString().toLowerCase().trim() ?? '';
+          final market = item['market']?.toString().toLowerCase().trim() ?? '';
+          return crop == 'wheat' && market.contains('meerut');
+        },
+        orElse: () => records.firstWhere(
+          (item) =>
+              (item['crop']?.toString().toLowerCase().trim() ?? '') == 'wheat',
+          orElse: () => <String, dynamic>{},
+        ),
+      );
+
+      setState(() {
+        if (wheatRecord.isNotEmpty && wheatRecord['price'] != null) {
+          _currentMandiPrice = _parseDouble(wheatRecord['price']);
+          _priceChangePercent = _parsePercent(wheatRecord['price_change']);
+          _demandLevel = wheatRecord['demand_level']?.toString() ?? 'Moderate';
+          _marketName = wheatRecord['market']?.toString() ?? 'Meerut Mandi';
+        } else {
+          _currentMandiPrice = null;
+        }
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Failed to load market rates: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  double _parseDouble(dynamic val, {double fallback = 0.0}) {
+    if (val == null) return fallback;
+    if (val is num) return val.toDouble();
+    return double.tryParse(val.toString().replaceAll(RegExp(r'[^0-9.-]'), '')) ??
+        fallback;
+  }
+
+  double _parsePercent(dynamic val) {
+    if (val == null) return 0.0;
+    final cleaned = val.toString().replaceAll('%', '').trim();
+    return double.tryParse(cleaned) ?? 0.0;
+  }
+
+  String _formatCurrency(double amount) {
+    return '₹${amount.toStringAsFixed(0).replaceAllMapped(
+          RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'),
+          (match) => '${match[1]},',
+        )}';
+  }
+
+  String _formatPrice(double price) {
+    if (price % 1 == 0) {
+      return '₹${price.toInt().toString().replaceAllMapped(RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'), (m) => '${m[1]},')}/qtl';
+    }
+    return '₹${price.toStringAsFixed(2)}/qtl';
+  }
+
+  (String action, String reason, Color color, Color containerColor)
+      _calculateRecommendation(double priceChange, String demandLevel) {
+    final normalizedDemand = demandLevel.trim().toLowerCase();
+
+    if (priceChange >= 3.0 && normalizedDemand == 'high') {
+      return (
+        'HOLD',
+        'Price is rising and demand is high. Consider holding the produce.',
+        AppColors.primary,
+        AppColors.primaryContainer,
+      );
+    } else if (priceChange < 0 || normalizedDemand == 'low') {
+      return (
+        'SELL',
+        'Market conditions are weakening. Consider selling the produce.',
+        AppColors.error,
+        AppColors.error.withValues(alpha: 0.15),
+      );
+    } else {
+      return (
+        'HOLD',
+        'Market conditions are relatively stable. Continue monitoring the market.',
+        AppColors.secondary,
+        AppColors.secondaryContainer,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final currentPrice = _currentMandiPrice;
+
+    final price7Days = currentPrice != null
+        ? currentPrice * (1.0 + (_priceChangePercent / 100.0 * 0.5))
+        : 0.0;
+    final price15Days = currentPrice != null
+        ? currentPrice * (1.0 + (_priceChangePercent / 100.0 * 0.8))
+        : 0.0;
+
+    // Scenario 1: SELL NOW
+    final grossSellNow = (currentPrice ?? 0.0) * _stockQuantity;
+    const storageSellNow = 0.0;
+    const transportSellNow = 2500.0;
+    final netSellNow = grossSellNow - storageSellNow - transportSellNow;
+
+    // Scenario 2: HOLD 7 DAYS
+    final grossHold7 = price7Days * _stockQuantity;
+    final storageHold7 = 100.0 * _stockQuantity;
+    const transportHold7 = 2500.0;
+    final netHold7 = grossHold7 - storageHold7 - transportHold7;
+
+    // Scenario 3: HOLD 15 DAYS
+    final grossHold15 = price15Days * _stockQuantity;
+    final storageHold15 = 200.0 * _stockQuantity;
+    const transportHold15 = 2500.0;
+    final netHold15 = grossHold15 - storageHold15 - transportHold15;
+
+    // Determine Best Scenario
+    String bestScenarioTitle = 'Sell Now';
+    if (netHold7 > netSellNow && netHold7 >= netHold15) {
+      bestScenarioTitle = 'Hold for 7 Days';
+    } else if (netHold15 > netSellNow && netHold15 > netHold7) {
+      bestScenarioTitle = 'Hold for 15 Days';
+    }
+
+    final (recAction, recReason, recBadgeColor, recBadgeContainerColor) =
+        _calculateRecommendation(_priceChangePercent, _demandLevel);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('What-If Simulator'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back',
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text('What-If Price Simulator'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Refresh',
+            onPressed: _fetchMarketBaseline,
+          ),
+        ],
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          children: [
-            // Simulation Parameters Card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Simulation Parameters',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryContainer,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'Wheat • 100 qtl',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.onPrimaryContainer,
+        child: RefreshIndicator(
+          onRefresh: _fetchMarketBaseline,
+          child: ListView(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            children: [
+              // Baseline Header & Quantity Input Card
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Market Assumptions',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryContainer,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              _crop,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 24, color: AppColors.outlineVariant),
+                      _ParamRow(
+                        label: 'Current Mandi Rate',
+                        value: currentPrice != null
+                            ? _formatPrice(currentPrice)
+                            : 'N/A',
+                        subvalue: _marketName,
+                      ),
+                      const SizedBox(height: 10),
+                      _ParamRow(
+                        label: 'Recorded Price Trend',
+                        value: '${_priceChangePercent >= 0 ? '+' : ''}$_priceChangePercent%',
+                        subvalue: 'Recent Mandi movement',
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Harvest Lot Volume (Quintals)',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _quantityController,
+                        keyboardType:
+                            const TextInputType.numberWithOptions(decimal: true),
+                        decoration: const InputDecoration(
+                          hintText: 'Enter quantity in quintals',
+                          suffixText: 'qtl',
+                          prefixIcon: Icon(Icons.scale_rounded),
+                        ),
+                        onChanged: (val) {
+                          final parsed = double.tryParse(val.trim());
+                          setState(() {
+                            _stockQuantity =
+                                (parsed != null && parsed > 0) ? parsed : 0.0;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Prototype Cost Assumptions Card
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Estimated Prototype Costs',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.info_outline_rounded,
+                            size: 18,
+                            color: AppColors.outline,
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 18, color: AppColors.outlineVariant),
+                      Text(
+                        '• Transport: ₹2,500 flat per haulage\n• Storage (Hold 7d): ₹100/quintal\n• Storage (Hold 15d): ₹200/quintal',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Scenario Comparison',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Scenario estimate based on current market trend',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              if (_isLoading)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          _errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: AppColors.error,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                          onPressed: _fetchMarketBaseline,
+                          child: const Text('Retry'),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: const [
-                          _ParamCol(label: 'Spot Price', value: '₹2,450/qtl'),
-                          _ParamDivider(),
-                          _ParamCol(label: 'Transport', value: '₹80/qtl'),
-                          _ParamDivider(),
-                          _ParamCol(label: 'Storage', value: '₹50/qtl'),
+                  ),
+                )
+              else if (currentPrice == null)
+                Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.insights_rounded,
+                            size: 48,
+                            color: AppColors.outline,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No market data found for Wheat',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Simulation requires live mandi rates. Please ensure Wheat rates are recorded in the database.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Base Strategies Section Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: Text(
-                'Strategy Comparison (Expected Market)',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-
-            // Strategy 1: Sell Now
-            const _StrategyCard(
-              title: '1. Sell Now',
-              sellingPrice: '₹2,450/qtl',
-              totalCost: '₹8,000',
-              netReturn: '₹2,37,000',
-              riskLabel: 'Low Risk',
-              riskColor: AppColors.success,
-              riskBgColor: Color(0xFFE8F5E9),
-              isRecommended: false,
-            ),
-
-            // Strategy 3 (Highlighted): Sell 40% Now + Hold 60%
-            const _StrategyCard(
-              title: '3. Sell 40% Now + Hold 60%',
-              sellingPrice: '₹2,450 now / ₹2,520 later',
-              totalCost: '₹11,000',
-              netReturn: '₹2,38,200',
-              riskLabel: 'Balanced Risk',
-              riskColor: AppColors.primary,
-              riskBgColor: AppColors.primaryContainer,
-              isRecommended: true,
-            ),
-
-            // Strategy 2: Hold for 7 Days
-            const _StrategyCard(
-              title: '2. Hold for 7 Days',
-              sellingPrice: '₹2,520/qtl (Projected)',
-              totalCost: '₹13,000',
-              netReturn: '₹2,39,000',
-              riskLabel: 'High Risk',
-              riskColor: AppColors.error,
-              riskBgColor: Color(0xFFFFEBEE),
-              isRecommended: false,
-            ),
-
-            const SizedBox(height: 12),
-
-            // Stress-Test Scenario: 5% Price Drop
-            Card(
-              color: const Color(0xFFFFF7F2),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: AppColors.tertiary, width: 1.2),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                  ),
+                )
+              else ...[
+                // Best Scenario Callout Banner
+                Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  color: AppColors.primaryContainer.withValues(alpha: 0.35),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: AppColors.tertiaryContainer,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Icon(
-                            Icons.trending_down_rounded,
-                            size: 18,
-                            color: AppColors.tertiary,
-                          ),
+                        const Icon(
+                          Icons.stars_rounded,
+                          color: AppColors.primary,
+                          size: 28,
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Simulate 5% Price Drop',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.tertiary,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Best Scenario: $bestScenarioTitle',
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Yields the highest estimated net realisable value for $_stockQuantity qtl.',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: AppColors.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'If mandi rates drop to ₹2,328/qtl due to arrival surges or rain disruptions:',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    const _ScenarioImpactTile(
-                      strategyName: 'Sell Now',
-                      netReturn: '₹2,37,000',
-                      protectionNote: 'Locked profit; zero exposure to price fall',
-                      impactColor: AppColors.success,
-                      delta: '0% impact',
-                    ),
-                    const SizedBox(height: 8),
-                    const _ScenarioImpactTile(
-                      strategyName: 'Sell 40% + Hold 60%',
-                      netReturn: '₹2,27,480',
-                      protectionNote: '+₹7,680 higher protection vs full holding',
-                      impactColor: AppColors.tertiary,
-                      delta: '-₹9,520 impact',
-                    ),
-                    const SizedBox(height: 8),
-                    const _ScenarioImpactTile(
-                      strategyName: 'Hold for 7 Days',
-                      netReturn: '₹2,19,800',
-                      protectionNote: 'Maximum vulnerability; ₹17,200 total loss vs Sell Now',
-                      impactColor: AppColors.error,
-                      delta: '-₹17,200 impact',
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
 
-            // Simulation Disclaimer
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.info_outline_rounded,
-                    size: 16,
-                    color: AppColors.outline,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Disclaimer: Figures are simulated estimates for planning and do not guarantee final mandi realizations or returns.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontSize: 12,
-                        color: AppColors.outline,
-                        height: 1.35,
-                      ),
+                const SizedBox(height: 8),
+
+                // Scenario 1: SELL NOW
+                _ScenarioCard(
+                  title: '1. Sell Now',
+                  badgeText: 'Spot Market',
+                  badgeColor: AppColors.secondaryContainer,
+                  badgeTextColor: AppColors.secondary,
+                  scenarioPrice: _formatPrice(currentPrice),
+                  grossValue: _formatCurrency(grossSellNow),
+                  storageCost: _formatCurrency(storageSellNow),
+                  transportCost: _formatCurrency(transportSellNow),
+                  netRealisableValue: _formatCurrency(netSellNow),
+                  isBest: bestScenarioTitle == 'Sell Now',
+                ),
+
+                // Scenario 2: HOLD 7 DAYS
+                _ScenarioCard(
+                  title: '2. Hold for 7 Days',
+                  badgeText: 'Short Hold',
+                  badgeColor: AppColors.primaryContainer,
+                  badgeTextColor: AppColors.primary,
+                  scenarioPrice: _formatPrice(price7Days),
+                  grossValue: _formatCurrency(grossHold7),
+                  storageCost: _formatCurrency(storageHold7),
+                  transportCost: _formatCurrency(transportHold7),
+                  netRealisableValue: _formatCurrency(netHold7),
+                  isBest: bestScenarioTitle == 'Hold for 7 Days',
+                ),
+
+                // Scenario 3: HOLD 15 DAYS
+                _ScenarioCard(
+                  title: '3. Hold for 15 Days',
+                  badgeText: 'Extended Hold',
+                  badgeColor: AppColors.tertiaryContainer,
+                  badgeTextColor: AppColors.tertiary,
+                  scenarioPrice: _formatPrice(price15Days),
+                  grossValue: _formatCurrency(grossHold15),
+                  storageCost: _formatCurrency(storageHold15),
+                  transportCost: _formatCurrency(transportHold15),
+                  netRealisableValue: _formatCurrency(netHold15),
+                  isBest: bestScenarioTitle == 'Hold for 15 Days',
+                ),
+
+                const SizedBox(height: 16),
+
+                // Current Market Recommendation Card
+                Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Current Market Recommendation',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: recBadgeContainerColor,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                recAction,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: recBadgeColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Divider(height: 18, color: AppColors.outlineVariant),
+                        Text(
+                          recReason,
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Based on live price trend ($_priceChangePercent%) and demand level ($_demandLevel).',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
+                ),
+              ],
+
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _StrategyCard extends StatelessWidget {
-  final String title;
-  final String sellingPrice;
-  final String totalCost;
-  final String netReturn;
-  final String riskLabel;
-  final Color riskColor;
-  final Color riskBgColor;
-  final bool isRecommended;
+class _ParamRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final String subvalue;
 
-  const _StrategyCard({
+  const _ParamRow({
+    required this.label,
+    required this.value,
+    required this.subvalue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            Text(
+              subvalue,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+            ),
+          ],
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ScenarioCard extends StatelessWidget {
+  final String title;
+  final String badgeText;
+  final Color badgeColor;
+  final Color badgeTextColor;
+  final String scenarioPrice;
+  final String grossValue;
+  final String storageCost;
+  final String transportCost;
+  final String netRealisableValue;
+  final bool isBest;
+
+  const _ScenarioCard({
     required this.title,
-    required this.sellingPrice,
-    required this.totalCost,
-    required this.netReturn,
-    required this.riskLabel,
-    required this.riskColor,
-    required this.riskBgColor,
-    required this.isRecommended,
+    required this.badgeText,
+    required this.badgeColor,
+    required this.badgeTextColor,
+    required this.scenarioPrice,
+    required this.grossValue,
+    required this.storageCost,
+    required this.transportCost,
+    required this.netRealisableValue,
+    this.isBest = false,
   });
 
   @override
@@ -254,11 +627,12 @@ class _StrategyCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isRecommended ? AppColors.primary : AppColors.outlineVariant,
-          width: isRecommended ? 1.8 : 0.8,
+          color: isBest ? AppColors.primary : AppColors.outlineVariant,
+          width: isBest ? 2 : 1,
         ),
       ),
       child: Padding(
@@ -269,80 +643,74 @@ class _StrategyCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-                if (isRecommended)
-                  Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Text(
-                      'RECOMMENDED',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.onPrimary,
-                        letterSpacing: 0.5,
+                Row(
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
+                    if (isBest) ...[
+                      const SizedBox(width: 6),
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
+                    ],
+                  ],
+                ),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: riskBgColor,
+                    color: badgeColor,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    riskLabel,
+                    badgeText,
                     style: TextStyle(
                       fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: riskColor,
+                      fontWeight: FontWeight.bold,
+                      color: badgeTextColor,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            _SimRow(label: 'Selling Price', value: sellingPrice),
+            const Divider(height: 20, color: AppColors.outlineVariant),
+            _LineRow(label: 'Price per Quintal', value: scenarioPrice),
             const SizedBox(height: 6),
-            _SimRow(label: 'Estimated Costs', value: totalCost),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Divider(color: AppColors.outlineVariant),
+            _LineRow(label: 'Gross Produce Value', value: grossValue),
+            const SizedBox(height: 6),
+            _LineRow(
+              label: 'Storage Cost',
+              value: '-$storageCost',
+              valueColor: AppColors.onSurfaceVariant,
             ),
+            const SizedBox(height: 6),
+            _LineRow(
+              label: 'Transport Cost',
+              value: '-$transportCost',
+              valueColor: AppColors.onSurfaceVariant,
+            ),
+            const Divider(height: 20, color: AppColors.outlineVariant),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Expected Net Return',
+                  'Net Realisable Value',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  netReturn,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
+                  netRealisableValue,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: isBest ? AppColors.primary : AppColors.onSurface,
                   ),
                 ),
               ],
@@ -354,166 +722,37 @@ class _StrategyCard extends StatelessWidget {
   }
 }
 
-class _ScenarioImpactTile extends StatelessWidget {
-  final String strategyName;
-  final String netReturn;
-  final String protectionNote;
-  final Color impactColor;
-  final String delta;
+class _LineRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color? valueColor;
 
-  const _ScenarioImpactTile({
-    required this.strategyName,
-    required this.netReturn,
-    required this.protectionNote,
-    required this.impactColor,
-    required this.delta,
+  const _LineRow({
+    required this.label,
+    required this.value,
+    this.valueColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.outlineVariant, width: 0.7),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                strategyName,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Row(
-                children: [
-                  Text(
-                    netReturn,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.onSurface,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: impactColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      delta,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: impactColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            protectionNote,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontSize: 12,
-              color: AppColors.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SimRow extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _SimRow({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: AppColors.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
         ),
         Text(
           value,
-          style: theme.textTheme.bodyMedium?.copyWith(
+          style: TextStyle(
+            fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: AppColors.onSurface,
+            color: valueColor ?? AppColors.onSurface,
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ParamCol extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _ParamCol({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: theme.textTheme.bodyMedium?.copyWith(fontSize: 11),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.onSurface,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ParamDivider extends StatelessWidget {
-  const _ParamDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 28,
-      width: 1,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      color: AppColors.outlineVariant,
     );
   }
 }

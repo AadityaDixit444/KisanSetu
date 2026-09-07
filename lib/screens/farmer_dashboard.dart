@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-
 import '../theme/app_colors.dart';
 import 'notifications_screen.dart';
 import 'farmer/buyer_offers_screen.dart';
 import 'farmer/create_lot_screen.dart';
+import 'farmer/demand_board_screen.dart';
 import 'farmer/lots_screen.dart';
 import 'farmer/matching_screen.dart';
+import 'farmer/recommendation_screen.dart';
 import 'farmer/transaction_screen.dart';
 
 class FarmerDashboard extends StatelessWidget {
@@ -120,6 +121,65 @@ class FarmerDashboard extends StatelessWidget {
               ),
             ),
 
+            // Action Card: Market Recommendation
+            Card(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RecommendationScreen(),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondaryContainer,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.auto_graph_rounded,
+                          color: AppColors.secondary,
+                          size: 26,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Market Recommendation',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Get HOLD / SELL guidance based on live mandi conditions',
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 16,
+                        color: AppColors.outline,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
             // Action Card: Add New Produce Lot
             Card(
               child: InkWell(
@@ -221,6 +281,65 @@ class FarmerDashboard extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text(
                               'View listed crops, active lots & manage offers',
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 16,
+                        color: AppColors.outline,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Action Card: Buyer Demand Board
+            Card(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DemandBoardScreen(),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.tertiaryContainer,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.campaign_outlined,
+                          color: AppColors.tertiary,
+                          size: 26,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Buyer Demand Board',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'View active commodity requirements posted by buyers',
                               style: theme.textTheme.bodyMedium,
                             ),
                           ],
