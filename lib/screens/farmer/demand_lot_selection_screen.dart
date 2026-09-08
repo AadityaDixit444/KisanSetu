@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../services/lot_service.dart';
 import '../../theme/app_colors.dart';
 import '../buyer/make_offer_screen.dart';
 
@@ -27,8 +26,9 @@ class DemandLotSelectionScreen extends StatefulWidget {
       _DemandLotSelectionScreenState();
 }
 
-class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
-  final LotService _lotService = LotService();
+class _DemandLotSelectionScreenState
+    extends State<DemandLotSelectionScreen> {
+  final SupabaseClient _client = Supabase.instance.client;
 
   bool _isLoading = true;
   String? _errorMessage;
@@ -42,43 +42,66 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
   }
 
   Future<void> _fetchFarmerMatchingLots() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
-      final currentUserId = Supabase.instance.client.auth.currentUser?.id;
-      final allLots = await _lotService.getActiveLots();
+      final user = _client.auth.currentUser;
 
-      final filteredLots = allLots.where((lot) {
-        final farmerId = lot['farmer_id']?.toString();
-        final lotCrop = lot['crop']?.toString().toLowerCase().trim() ?? '';
-        final status = lot['status']?.toString().toLowerCase().trim() ?? '';
+      if (user == null) {
+        throw Exception('No authenticated farmer found');
+      }
+
+      final data = await _client
+          .from('lots')
+          .select('''
+            id,
+            farmer_id,
+            crop,
+            quantity,
+            quality,
+            asking_price,
+            location,
+            status,
+            created_at
+          ''')
+          .eq('farmer_id', user.id)
+          .eq('status', 'active')
+          .order('created_at', ascending: false);
+
+      final demandCrop = _normalizeCrop(widget.crop);
+
+      final filteredLots =
+          List<Map<String, dynamic>>.from(data).where((lot) {
+        final lotCrop = _normalizeCrop(lot['crop']?.toString() ?? '');
         final quantity = _parseDouble(lot['quantity']);
 
-        final isOwner = currentUserId != null && farmerId == currentUserId;
-        final isMatchingCrop =
-            lotCrop == widget.crop.toLowerCase().trim();
-        final isActive = status == 'active';
-        final hasQuantity = quantity > 0;
-
-        return isOwner && isMatchingCrop && isActive && hasQuantity;
+        return lotCrop == demandCrop && quantity > 0;
       }).toList();
 
       if (!mounted) return;
 
       setState(() {
         _matchingLots = filteredLots;
+
         if (_selectedLot != null &&
             !_matchingLots.any(
-                (lot) => lot['id']?.toString() == _selectedLot!['id']?.toString())) {
+              (lot) =>
+                  lot['id']?.toString() ==
+                  _selectedLot!['id']?.toString(),
+            )) {
           _selectedLot = null;
         }
+
         _isLoading = false;
       });
     } catch (e) {
       if (!mounted) return;
+
       setState(() {
         _errorMessage = 'Failed to load matching lots: $e';
         _isLoading = false;
@@ -86,23 +109,69 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
     }
   }
 
-  double _parseDouble(dynamic val) {
-    if (val == null) return 0.0;
-    if (val is num) return val.toDouble();
-    return double.tryParse(val.toString()) ?? 0.0;
+  String _normalizeCrop(String value) {
+    return value
+        .toLowerCase()
+        .trim()
+        .replaceAll(RegExp(r'\s+'), ' ');
+  }
+
+  double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString()) ?? 0.0;
   }
 
   String _formatPrice(dynamic rawPrice) {
-    final val = _parseDouble(rawPrice);
-    if (val % 1 == 0) {
-      return '₹${val.toInt().toString().replaceAllMapped(RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'), (m) => '${m[1]},')}/qtl';
+    final value = _parseDouble(rawPrice);
+
+    if (value % 1 == 0) {
+      return '₹${value.toInt().toString().replaceAllMapped(
+            RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))'),
+            (match) => '${match[1]},',
+          )}/qtl';
     }
-    return '₹${val.toStringAsFixed(2)}/qtl';
+
+    return '₹${value.toStringAsFixed(2)}/qtl';
   }
 
-  String _formatQuantity(dynamic rawQty) {
-    final val = _parseDouble(rawQty);
-    return val % 1 == 0 ? '${val.toInt()} qtl' : '$val qtl';
+  String _formatQuantity(dynamic rawQuantity) {
+    final value = _parseDouble(rawQuantity);
+
+    return value % 1 == 0
+        ? '${value.toInt()} qtl'
+        : '$value qtl';
+  }
+
+  void _selectLot(Map<String, dynamic> lot) {
+    setState(() {
+      _selectedLot = lot;
+    });
+  }
+
+  void _continueToOffer() {
+    if (_selectedLot == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MakeOfferScreen(
+          demandId: widget.demandId,
+          lotId: _selectedLot!['id'].toString(),
+          crop: _selectedLot!['crop']?.toString() ?? widget.crop,
+
+          // IMPORTANT:
+          // Offer only the quantity requested by the buyer,
+          // not the entire farmer lot quantity.
+          quantity: widget.requiredQuantity.toString(),
+
+          askingPrice:
+              _selectedLot!['asking_price']?.toString() ?? '0',
+          location:
+              _selectedLot!['location']?.toString() ?? widget.location,
+        ),
+      ),
+    );
   }
 
   @override
@@ -129,20 +198,22 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                 child: ListView(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   children: [
-                    // Buyer Demand Summary Card
                     Card(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
                           children: [
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   'Buyer Demand Overview',
-                                  style: theme.textTheme.titleMedium?.copyWith(
+                                  style: theme.textTheme.titleMedium
+                                      ?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -152,8 +223,10 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primaryContainer,
-                                    borderRadius: BorderRadius.circular(6),
+                                    color:
+                                        AppColors.primaryContainer,
+                                    borderRadius:
+                                        BorderRadius.circular(6),
                                   ),
                                   child: const Text(
                                     'Active Demand',
@@ -166,10 +239,7 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                                 ),
                               ],
                             ),
-                            const Divider(
-                              height: 20,
-                              color: AppColors.outlineVariant,
-                            ),
+                            const Divider(height: 20),
                             _SummaryRow(
                               label: 'Crop Commodity',
                               value: widget.crop,
@@ -177,12 +247,16 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                             const SizedBox(height: 6),
                             _SummaryRow(
                               label: 'Required Quantity',
-                              value: _formatQuantity(widget.requiredQuantity),
+                              value:
+                                  _formatQuantity(
+                                widget.requiredQuantity,
+                              ),
                             ),
                             const SizedBox(height: 6),
                             _SummaryRow(
                               label: 'Target Buying Price',
-                              value: _formatPrice(widget.targetPrice),
+                              value:
+                                  _formatPrice(widget.targetPrice),
                               valueColor: AppColors.primary,
                               isBold: true,
                             ),
@@ -200,11 +274,10 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         'Your Matching Lots',
                         style: theme.textTheme.titleMedium?.copyWith(
@@ -213,11 +286,13 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-
                     if (_isLoading)
                       const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 48),
-                        child: Center(child: CircularProgressIndicator()),
+                        padding:
+                            EdgeInsets.symmetric(vertical: 48),
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
                       )
                     else if (_errorMessage != null)
                       Padding(
@@ -228,13 +303,15 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                               Text(
                                 _errorMessage!,
                                 textAlign: TextAlign.center,
-                                style: theme.textTheme.bodyMedium?.copyWith(
+                                style:
+                                    theme.textTheme.bodyMedium?.copyWith(
                                   color: AppColors.error,
                                 ),
                               ),
                               const SizedBox(height: 12),
                               OutlinedButton(
-                                onPressed: _fetchFarmerMatchingLots,
+                                onPressed:
+                                    _fetchFarmerMatchingLots,
                                 child: const Text('Retry'),
                               ),
                             ],
@@ -243,7 +320,9 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                       )
                     else if (_matchingLots.isEmpty)
                       Card(
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.all(24),
                           child: Center(
@@ -257,16 +336,21 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                                 const SizedBox(height: 12),
                                 Text(
                                   'No matching active lots found',
-                                  style: theme.textTheme.titleSmall?.copyWith(
+                                  style: theme
+                                      .textTheme.titleSmall
+                                      ?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 6),
                                 Text(
                                   'You need an active lot of ${widget.crop} with available quantity to respond to this buyer demand.',
                                   textAlign: TextAlign.center,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: AppColors.onSurfaceVariant,
+                                  style: theme
+                                      .textTheme.bodySmall
+                                      ?.copyWith(
+                                    color:
+                                        AppColors.onSurfaceVariant,
                                   ),
                                 ),
                               ],
@@ -276,20 +360,40 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                       )
                     else
                       ..._matchingLots.map((lot) {
-                        final lotId = lot['id']?.toString() ?? '';
+                        final lotId =
+                            lot['id']?.toString() ?? '';
+
                         final shortId = lotId.length > 8
                             ? lotId.substring(0, 8)
                             : lotId;
-                        final crop = lot['crop']?.toString() ?? 'Produce';
-                        final quantity = _formatQuantity(lot['quantity']);
+
+                        final crop =
+                            lot['crop']?.toString() ?? 'Produce';
+
+                        final quantity =
+                            _formatQuantity(lot['quantity']);
+
                         final quality =
-                            lot['quality']?.toString() ?? 'Standard';
-                        final askingPrice = _formatPrice(lot['asking_price']);
+                            lot['quality']?.toString() ??
+                                'Standard';
+
+                        final askingPrice =
+                            _formatPrice(lot['asking_price']);
+
                         final location =
-                            lot['location']?.toString() ?? 'Not specified';
+                            lot['location']?.toString() ??
+                                'Not specified';
+
+                        final lotQuantity =
+                            _parseDouble(lot['quantity']);
 
                         final isSelected =
-                            _selectedLot?['id']?.toString() == lotId;
+                            _selectedLot?['id']?.toString() ==
+                                lotId;
+
+                        final canFulfill =
+                            lotQuantity >=
+                                widget.requiredQuantity;
 
                         return Card(
                           margin: const EdgeInsets.symmetric(
@@ -297,7 +401,8 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                             vertical: 6,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius:
+                                BorderRadius.circular(12),
                             side: BorderSide(
                               color: isSelected
                                   ? AppColors.primary
@@ -306,31 +411,26 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                             ),
                           ),
                           child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () {
-                              setState(() {
-                                _selectedLot = lot;
-                              });
-                            },
+                            borderRadius:
+                                BorderRadius.circular(12),
+                            onTap: () => _selectLot(lot),
                             child: Padding(
                               padding: const EdgeInsets.all(16),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
                                     children: [
                                       Radio<String>(
                                         value: lotId,
                                         groupValue:
-                                            _selectedLot?['id']?.toString(),
-                                        activeColor: AppColors.primary,
-                                        onChanged: (_) {
-                                          setState(() {
-                                            _selectedLot = lot;
-                                          });
-                                        },
+                                            _selectedLot?['id']
+                                                ?.toString(),
+                                        activeColor:
+                                            AppColors.primary,
+                                        onChanged: (_) =>
+                                            _selectLot(lot),
                                       ),
                                       const SizedBox(width: 4),
                                       Expanded(
@@ -340,19 +440,20 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                                           children: [
                                             Text(
                                               crop,
-                                              style: theme
-                                                  .textTheme.titleMedium
+                                              style: theme.textTheme
+                                                  .titleMedium
                                                   ?.copyWith(
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight:
+                                                    FontWeight.bold,
                                               ),
                                             ),
                                             Text(
                                               'Lot ID: $shortId',
-                                              style: theme
-                                                  .textTheme.bodySmall
+                                              style: theme.textTheme
+                                                  .bodySmall
                                                   ?.copyWith(
-                                                color:
-                                                    AppColors.onSurfaceVariant,
+                                                color: AppColors
+                                                    .onSurfaceVariant,
                                               ),
                                             ),
                                           ],
@@ -361,17 +462,16 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                                       Text(
                                         askingPrice,
                                         style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight:
+                                              FontWeight.bold,
                                           fontSize: 15,
-                                          color: AppColors.primary,
+                                          color:
+                                              AppColors.primary,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  const Divider(
-                                    height: 18,
-                                    color: AppColors.outlineVariant,
-                                  ),
+                                  const Divider(height: 18),
                                   _SummaryRow(
                                     label: 'Available Quantity',
                                     value: quantity,
@@ -387,6 +487,39 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                                     label: 'Warehouse Location',
                                     value: location,
                                   ),
+                                  const SizedBox(height: 10),
+                                  Container(
+                                    width: double.infinity,
+                                    padding:
+                                        const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: canFulfill
+                                          ? AppColors
+                                              .primaryContainer
+                                          : AppColors.error
+                                              .withValues(
+                                            alpha: 0.10,
+                                          ),
+                                      borderRadius:
+                                          BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      canFulfill
+                                          ? '✓ Sufficient quantity for this demand'
+                                          : 'Partial quantity available — you can still respond',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight:
+                                            FontWeight.w600,
+                                        color: canFulfill
+                                            ? AppColors.primary
+                                            : AppColors.error,
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -397,14 +530,14 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                 ),
               ),
             ),
-
-            // Bottom Action Bar
             Container(
               padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(
-                  top: BorderSide(color: AppColors.outlineVariant),
+                  top: BorderSide(
+                    color: AppColors.outlineVariant,
+                  ),
                 ),
               ),
               child: SizedBox(
@@ -413,28 +546,7 @@ class _DemandLotSelectionScreenState extends State<DemandLotSelectionScreen> {
                 child: ElevatedButton(
                   onPressed: _selectedLot == null
                       ? null
-                      : () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MakeOfferScreen(
-                                demandId: widget.demandId,
-                                lotId: _selectedLot!['id'].toString(),
-                                crop: _selectedLot!['crop']?.toString() ??
-                                    widget.crop,
-                                quantity:
-                                    _selectedLot!['quantity']?.toString() ??
-                                        '0',
-                                askingPrice:
-                                    _selectedLot!['asking_price']?.toString() ??
-                                        '0',
-                                location:
-                                    _selectedLot!['location']?.toString() ??
-                                        widget.location,
-                              ),
-                            ),
-                          );
-                        },
+                      : _continueToOffer,
                   child: const Text(
                     'Continue to Make Offer',
                     style: TextStyle(
@@ -468,13 +580,15 @@ class _SummaryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment:
+          MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
+          style:
+              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
         ),
         Flexible(
           child: Text(
@@ -483,8 +597,10 @@ class _SummaryRow extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: isBold ? 14 : 13,
-              fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
-              color: valueColor ?? AppColors.onSurface,
+              fontWeight:
+                  isBold ? FontWeight.bold : FontWeight.w500,
+              color:
+                  valueColor ?? AppColors.onSurface,
             ),
           ),
         ),
