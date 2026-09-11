@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../localization/language_scope.dart';
 import '../services/auth_service.dart';
 import '../services/profile_service.dart';
 import '../theme/app_colors.dart';
+import '../widgets/language_toggle_button.dart';
 import 'buyer/buyer_dashboard.dart';
 import 'farmer_dashboard.dart';
 
@@ -73,10 +75,10 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
             ListView(
               padding: const EdgeInsets.symmetric(
                 horizontal: 24,
-                vertical: 32,
+                vertical: 24,
               ),
               children: [
-                const SizedBox(height: 24),
+                const SizedBox(height: 36),
                 Center(
                   child: Container(
                     padding: const EdgeInsets.all(18),
@@ -93,7 +95,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'KisanSetu',
+                  context.tr('app_name'),
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w900,
@@ -103,7 +105,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Direct Agricultural Marketplace',
+                  context.tr('app_tagline'),
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: AppColors.onSurfaceVariant,
@@ -112,7 +114,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 ),
                 const SizedBox(height: 36),
                 Text(
-                  'Choose how you want to continue:',
+                  context.tr('select_role_title'),
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
@@ -158,14 +160,14 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'I am a Farmer',
+                                  context.tr('role_farmer_title'),
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'List produce, track live mandi rates, simulate holding returns, and connect with verified buyers.',
+                                  context.tr('role_farmer_desc'),
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                     color: AppColors.onSurfaceVariant,
                                     fontSize: 13,
@@ -224,14 +226,14 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'I am a Buyer',
+                                  context.tr('role_buyer_title'),
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Source directly from farmers, post commodity demands, make bids, and track active purchases.',
+                                  context.tr('role_buyer_desc'),
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                     color: AppColors.onSurfaceVariant,
                                     fontSize: 13,
@@ -251,6 +253,12 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   ),
                 ),
               ],
+            ),
+            // Global Hindi/English Language Toggle pinned at top-right
+            Positioned(
+              top: 12,
+              right: 16,
+              child: const LanguageToggleButton(isLightSurface: true),
             ),
             if (_isLoading)
               Positioned.fill(

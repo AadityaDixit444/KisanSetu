@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../localization/language_scope.dart';
 import '../../services/demand_service.dart';
 import '../../services/lot_service.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/language_toggle_button.dart';
 import '../notifications_screen.dart';
 import 'browse_lots_screen.dart';
 import 'buyer_lot_details_screen.dart';
@@ -123,14 +125,14 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Welcome back,',
+              context.tr('greeting_morning'),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: AppColors.onPrimary.withValues(alpha: 0.85),
               ),
             ),
-            const Text(
-              'Institutional Buyer',
-              style: TextStyle(
+            Text(
+              context.tr('role_buyer'),
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
               ),
@@ -138,9 +140,10 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
           ],
         ),
         actions: [
+          const LanguageToggleButton(isLightSurface: false),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
-            tooltip: 'Notifications',
+            tooltip: context.tr('notifications_title'),
             onPressed: () {
               Navigator.push(
                 context,
