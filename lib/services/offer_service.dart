@@ -149,51 +149,54 @@ class OfferService {
   }
 
   Future<void> createTransactionFromOffer({
-    required String offerId,
-  }) async {
-    final user = _client.auth.currentUser;
+  required String offerId,
+}) async {
+  final user = _client.auth.currentUser;
 
-    if (user == null) {
-      throw Exception('User is not authenticated.');
-    }
-
-    final offer = await _client
-        .from('offers')
-        .select('''
-          id,
-          lot_id,
-          buyer_id,
-          offer_price,
-          quantity,
-          lots (
-            farmer_id
-          )
-        ''')
-        .eq('id', offerId)
-        .single();
-
-    final lotId = offer['lot_id'].toString();
-    final buyerId = offer['buyer_id'].toString();
-    final farmerId = offer['lots']['farmer_id'].toString();
-    final agreedPrice = (offer['offer_price'] as num).toDouble();
-    final quantity = (offer['quantity'] as num).toDouble();
-    final totalAmount = agreedPrice * quantity;
-
-    await _client.from('transactions').insert({
-      'lot_id': lotId,
-      'buyer_id': buyerId,
-      'farmer_id': farmerId,
-      'agreed_price': agreedPrice,
-      'quantity': quantity,
-      'total_amount': totalAmount,
-      'status': 'confirmed',
-    });
-
-    await acceptOffer(offerId: offerId);
-
-    await _client
-        .from('lots')
-        .update({'status': 'sold'})
-        .eq('id', lotId);
+  if (user == null) {
+    throw Exception('User is not authenticated.');
   }
+
+  final offer = await _client
+      .from('offers')
+      .select('''
+        id,
+        lot_id,
+        buyer_id,
+        offer_price,
+        quantity,
+        lots (
+          farmer_id,
+          crop
+        )
+      ''')
+      .eq('id', offerId)
+      .single();
+
+  final lotId = offer['lot_id'].toString();
+  final buyerId = offer['buyer_id'].toString();
+  final farmerId = offer['lots']['farmer_id'].toString();
+  final crop = offer['lots']['crop'].toString();
+  final agreedPrice = (offer['offer_price'] as num).toDouble();
+  final quantity = (offer['quantity'] as num).toDouble();
+  final totalAmount = agreedPrice * quantity;
+
+  await _client.from('transactions').insert({
+    'lot_id': lotId,
+    'offer_id': offerId,
+    'buyer_id': buyerId,
+    'farmer_id': farmerId,
+    'crop': crop,
+    'agreed_price': agreedPrice,
+    'quantity': quantity,
+    'total_amount': totalAmount,
+    'payment_status': 'escrow_pending',
+    'dispatch_status': 'ready_for_dispatch',
+  });
+
+  await _client
+      .from('lots')
+      .update({'status': 'sold'})
+      .eq('id', lotId);
+}
 }

@@ -17,6 +17,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   List<Map<String, dynamic>> _transactions = [];
+  final Set<String> _updatingTxIds = {};
 
   @override
   void initState() {
@@ -31,48 +32,128 @@ class _TransactionScreenState extends State<TransactionScreen> {
     });
 
     try {
-      final data = await _transactionService.getFarmerTransactions();
+      final results = await _transactionService.getFarmerTransactions();
       if (!mounted) return;
       setState(() {
-        _transactions = data;
+        _transactions = results;
         _isLoading = false;
       });
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = 'Failed to load transactions. Please try again.';
+        _errorMessage = 'Failed to load transactions: $e';
         _isLoading = false;
       });
     }
   }
 
-  String _formatCurrency(dynamic amount) {
-    if (amount == null) return '₹0';
-    final val = amount is num ? amount.toDouble() : double.tryParse(amount.toString()) ?? 0.0;
-    return '₹${val.toStringAsFixed(0).replaceAllMapped(
-          RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'),
-          (match) => '${match[1]},',
-        )}';
+  double _parseDouble(dynamic val) {
+    if (val == null) return 0.0;
+    if (val is num) return val.toDouble();
+    return double.tryParse(val.toString().replaceAll(RegExp(r'[^0-9.-]'), '')) ?? 0.0;
   }
 
-  String _formatPricePerQtl(dynamic rawPrice) {
-    if (rawPrice == null) return '₹0/qtl';
-    final val = rawPrice is num ? rawPrice.toDouble() : double.tryParse(rawPrice.toString()) ?? 0.0;
+  String _formatPrice(dynamic rawPrice) {
+    final val = _parseDouble(rawPrice);
     if (val % 1 == 0) {
       return '₹${val.toInt().toString().replaceAllMapped(RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'), (m) => '${m[1]},')}/qtl';
     }
     return '₹${val.toStringAsFixed(2)}/qtl';
   }
 
+  String _formatCurrency(dynamic rawAmount) {
+    final val = _parseDouble(rawAmount);
+    return '₹${val.toInt().toString().replaceAllMapped(RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'), (m) => '${m[1]},')}';
+  }
+
   String _formatQuantity(dynamic rawQty) {
-    if (rawQty == null) return '0 qtl';
-    final val = rawQty is num ? rawQty.toDouble() : double.tryParse(rawQty.toString()) ?? 0.0;
+    final val = _parseDouble(rawQty);
     return val % 1 == 0 ? '${val.toInt()} qtl' : '$val qtl';
   }
 
-  String _capitalizeStatus(String status) {
-    if (status.isEmpty) return 'Pending';
-    return status[0].toUpperCase() + status.substring(1);
+  int _getTimelineStep(String status) {
+    final s = status.toLowerCase().trim();
+    if (s == 'completed' || s == 'delivered') {
+      return 4;
+    }
+    if (s == 'in_transit' || s == 'dispatched') {
+      return 3;
+    }
+    if (s == 'pickup_scheduled') {
+      return 2;
+    }
+    if (s == 'ready_for_dispatch' || s == 'confirmed' || s == 'escrow_pending' || s == 'escrow_funded' || s == 'paid') {
+      return 1;
+    }
+    return 0;
+  }
+
+  String? _getNextDispatchStatus(String currentStatus) {
+    switch (currentStatus.toLowerCase().trim()) {
+      case 'ready_for_dispatch':
+      case 'confirmed':
+        return 'pickup_scheduled';
+      case 'pickup_scheduled':
+        return 'in_transit';
+      case 'in_transit':
+      case 'dispatched':
+        return 'delivered';
+      default:
+        return null;
+    }
+  }
+
+  String _getActionLabel(String nextStatus) {
+    switch (nextStatus) {
+      case 'pickup_scheduled':
+        return 'Schedule Pickup';
+      case 'in_transit':
+        return 'Mark In Transit';
+      case 'delivered':
+        return 'Confirm Delivery';
+      default:
+        return 'Update Status';
+    }
+  }
+
+  Future<void> _handleUpdateDispatchStatus(String txId, String nextStatus) async {
+    if (_updatingTxIds.contains(txId)) return;
+
+    setState(() {
+      _updatingTxIds.add(txId);
+    });
+
+    try {
+      await _transactionService.updateDispatchStatus(
+        transactionId: txId,
+        newStatus: nextStatus,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Dispatch status updated to ${nextStatus.replaceAll('_', ' ')}'),
+          backgroundColor: AppColors.primary,
+        ),
+      );
+
+      await _fetchTransactions();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to update status: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _updatingTxIds.remove(txId);
+        });
+      }
+    }
   }
 
   @override
@@ -81,7 +162,19 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back',
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text('Transactions & Dispatches'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Refresh',
+            onPressed: _fetchTransactions,
+          ),
+        ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -90,7 +183,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
               ? const Center(child: CircularProgressIndicator())
               : _errorMessage != null
                   ? ListView(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+                      padding: const EdgeInsets.all(24),
                       children: [
                         Center(
                           child: Column(
@@ -115,27 +208,28 @@ class _TransactionScreenState extends State<TransactionScreen> {
                     )
                   : _transactions.isEmpty
                       ? ListView(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+                          padding: const EdgeInsets.all(24),
                           children: [
                             Center(
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
+                                  const SizedBox(height: 48),
+                                  const Icon(
                                     Icons.receipt_long_outlined,
-                                    size: 56,
+                                    size: 64,
                                     color: AppColors.outline,
                                   ),
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: 16),
                                   Text(
-                                    'No confirmed transactions yet',
+                                    'No Transactions Found',
                                     style: theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
+                                  const SizedBox(height: 6),
                                   Text(
-                                    'When you accept buyer offers, confirmed deals will appear here.',
+                                    'When buyer offers are accepted, deal contracts, escrow status, and dispatches will appear here.',
                                     textAlign: TextAlign.center,
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: AppColors.onSurfaceVariant,
@@ -151,203 +245,147 @@ class _TransactionScreenState extends State<TransactionScreen> {
                           itemCount: _transactions.length,
                           itemBuilder: (context, index) {
                             final tx = _transactions[index];
-                            final lot = tx['lots'] as Map<String, dynamic>?;
+                            final lotData = tx['lots'] as Map<String, dynamic>? ?? {};
 
-                            final txId = tx['id']?.toString() ?? 'N/A';
-                            final buyerId = tx['buyer_id']?.toString() ?? 'Unknown';
-                            final crop = lot?['crop']?.toString() ?? 'Produce';
+                            final txId = tx['id']?.toString() ?? '';
+                            final crop = tx['crop']?.toString() ?? lotData['crop']?.toString() ?? 'Produce';
                             final quantity = _formatQuantity(tx['quantity']);
-                            final agreedPrice = _formatPricePerQtl(tx['agreed_price']);
+                            final agreedPrice = _formatPrice(tx['agreed_price']);
                             final totalAmount = _formatCurrency(tx['total_amount']);
-                            final rawStatus = tx['status']?.toString().toLowerCase().trim() ?? 'confirmed';
-                            final isConfirmed = rawStatus == 'confirmed';
 
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: Column(
-                                children: [
-                                  // Transaction Details Card
-                                  Card(
-                                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(18),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  'Transaction #$txId',
-                                                  style: theme.textTheme.titleMedium?.copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                  vertical: 4,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: isConfirmed
-                                                      ? AppColors.primaryContainer
-                                                      : AppColors.tertiaryContainer,
-                                                  borderRadius: BorderRadius.circular(6),
-                                                ),
-                                                child: Text(
-                                                  _capitalizeStatus(rawStatus),
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: isConfirmed
-                                                        ? AppColors.primary
-                                                        : AppColors.tertiary,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const Divider(height: 24, color: AppColors.outlineVariant),
-                                          _DetailRow(
-                                            label: 'Buyer',
-                                            value: 'Buyer ID: $buyerId',
-                                          ),
-                                          const SizedBox(height: 8),
-                                          _DetailRow(label: 'Crop', value: crop),
-                                          const SizedBox(height: 8),
-                                          _DetailRow(label: 'Quantity', value: quantity),
-                                          const SizedBox(height: 8),
-                                          _DetailRow(label: 'Agreed Price', value: agreedPrice),
-                                          const SizedBox(height: 8),
-                                          _DetailRow(label: 'Total Amount', value: totalAmount),
-                                          const SizedBox(height: 8),
-                                          const _DetailRow(label: 'Transport Cost', value: 'Not arranged'),
-                                          const Padding(
-                                            padding: EdgeInsets.symmetric(vertical: 8),
-                                            child: Divider(color: AppColors.outlineVariant),
-                                          ),
-                                          _DetailRow(
-                                            label: 'Net Amount',
-                                            value: totalAmount,
-                                            isBold: true,
-                                            valueColor: AppColors.primary,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+                            final dispatchStatus = tx['dispatch_status']?.toString() ??
+                                tx['status']?.toString() ??
+                                'ready_for_dispatch';
+                            final statusDisplay = dispatchStatus.replaceAll('_', ' ').toUpperCase();
 
-                                  const SizedBox(height: 12),
+                            final location = lotData['location']?.toString() ?? 'Not specified';
+                            final quality = lotData['quality']?.toString() ?? 'Standard';
 
-                                  // Status Timeline Card
-                                  Card(
-                                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(18),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Fulfillment Status',
-                                            style: theme.textTheme.titleMedium?.copyWith(
+                            final currentStep = _getTimelineStep(dispatchStatus);
+                            final nextStatus = _getNextDispatchStatus(dispatchStatus);
+                            final isUpdating = _updatingTxIds.contains(txId);
+
+                            return Card(
+                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Padding(
+                                padding: const EdgeInsets.all(18),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          crop,
+                                          style: theme.textTheme.titleLarge?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primaryContainer,
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            statusDisplay,
+                                            style: const TextStyle(
+                                              fontSize: 11,
                                               fontWeight: FontWeight.bold,
+                                              color: AppColors.primary,
                                             ),
                                           ),
-                                          const SizedBox(height: 16),
-                                          _TimelineStep(
-                                            stepNumber: '1',
-                                            title: 'Deal Confirmed',
-                                            subtitle: isConfirmed ? 'Offer accepted & confirmed' : 'Awaiting confirmation',
-                                            isCompleted: isConfirmed,
-                                            isLast: false,
-                                          ),
-                                          const _TimelineStep(
-                                            stepNumber: '2',
-                                            title: 'Transport Arranged',
-                                            subtitle: 'Vehicle dispatch & logistics pending',
-                                            isCompleted: false,
-                                            isLast: false,
-                                          ),
-                                          const _TimelineStep(
-                                            stepNumber: '3',
-                                            title: 'Delivery Completed',
-                                            subtitle: 'Quality inspection & weighment at warehouse',
-                                            isCompleted: false,
-                                            isLast: false,
-                                          ),
-                                          const _TimelineStep(
-                                            stepNumber: '4',
-                                            title: 'Payment Processing',
-                                            subtitle: 'Direct bank transfer initiation',
-                                            isCompleted: false,
-                                            isLast: false,
-                                          ),
-                                          const _TimelineStep(
-                                            stepNumber: '5',
-                                            title: 'Payment Received',
-                                            subtitle: 'Direct settlement into registered account',
-                                            isCompleted: false,
-                                            isLast: true,
-                                          ),
-                                        ],
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      'ID: $txId',
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        color: AppColors.outline,
+                                        fontFamily: 'monospace',
                                       ),
                                     ),
-                                  ),
-
-                                  const SizedBox(height: 16),
-
-                                  // Open Logistics & Fulfillment Button
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                                    child: SizedBox(
-                                      width: double.infinity,
-                                      height: 48,
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => const LogisticsScreen(),
-                                            ),
-                                          );
-                                        },
-                                        child: const Text(
-                                          'Open Logistics & Fulfillment',
-                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    const Divider(height: 24, color: AppColors.outlineVariant),
+                                    _DetailItem(label: 'Agreed Price', value: agreedPrice),
+                                    const SizedBox(height: 8),
+                                    _DetailItem(label: 'Quantity', value: quantity),
+                                    const SizedBox(height: 8),
+                                    _DetailItem(label: 'Quality Grade', value: quality),
+                                    const SizedBox(height: 8),
+                                    _DetailItem(label: 'Depot Location', value: location),
+                                    const SizedBox(height: 8),
+                                    _DetailItem(
+                                      label: 'Total Amount',
+                                      value: totalAmount,
+                                      isBold: true,
+                                      valueColor: AppColors.primary,
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Text(
+                                      'Fulfillment Timeline',
+                                      style: theme.textTheme.titleSmall?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    _FulfillmentTimeline(currentStep: currentStep),
+                                    if (nextStatus != null) ...[
+                                      const SizedBox(height: 18),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton.icon(
+                                          onPressed: isUpdating
+                                              ? null
+                                              : () => _handleUpdateDispatchStatus(txId, nextStatus),
+                                          icon: isUpdating
+                                              ? const SizedBox(
+                                                  width: 16,
+                                                  height: 16,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    color: AppColors.onPrimary,
+                                                  ),
+                                                )
+                                              : const Icon(Icons.arrow_forward_rounded, size: 18),
+                                          label: Text(_getActionLabel(nextStatus)),
                                         ),
                                       ),
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 12),
-
-                                  // View Payment Details Button
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                                    child: SizedBox(
-                                      width: double.infinity,
-                                      height: 48,
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => const PaymentDetailsScreen(),
-                                            ),
-                                          );
-                                        },
-                                        child: const Text(
-                                          'View Payment Details',
-                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    ],
+                                    const SizedBox(height: 14),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: OutlinedButton(
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => const PaymentDetailsScreen(),
+                                                ),
+                                              );
+                                            },
+                                            child: const Text('Escrow Details'),
+                                          ),
                                         ),
-                                      ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => const LogisticsScreen(),
+                                                ),
+                                              );
+                                            },
+                                            child: const Text('Logistics'),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             );
                           },
@@ -358,13 +396,13 @@ class _TransactionScreenState extends State<TransactionScreen> {
   }
 }
 
-class _DetailRow extends StatelessWidget {
+class _DetailItem extends StatelessWidget {
   final String label;
   final String value;
   final bool isBold;
   final Color? valueColor;
 
-  const _DetailRow({
+  const _DetailItem({
     required this.label,
     required this.value,
     this.isBold = false,
@@ -382,16 +420,12 @@ class _DetailRow extends StatelessWidget {
                 color: AppColors.onSurfaceVariant,
               ),
         ),
-        Flexible(
-          child: Text(
-            value,
-            textAlign: TextAlign.end,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: isBold ? 15 : 14,
-              fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
-              color: valueColor ?? AppColors.onSurface,
-            ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: isBold ? 15 : 14,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+            color: valueColor ?? AppColors.onSurface,
           ),
         ),
       ],
@@ -399,91 +433,75 @@ class _DetailRow extends StatelessWidget {
   }
 }
 
-class _TimelineStep extends StatelessWidget {
-  final String stepNumber;
-  final String title;
-  final String subtitle;
-  final bool isCompleted;
-  final bool isLast;
+class _FulfillmentTimeline extends StatelessWidget {
+  final int currentStep;
 
-  const _TimelineStep({
-    required this.stepNumber,
-    required this.title,
-    required this.subtitle,
-    required this.isCompleted,
-    required this.isLast,
-  });
+  const _FulfillmentTimeline({required this.currentStep});
+
+  final List<String> _steps = const [
+    'Deal Agreed',
+    'Ready for Dispatch',
+    'Pickup Scheduled',
+    'In Transit',
+    'Delivered & Paid',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    return Column(
+      children: List.generate(_steps.length, (index) {
+        final isCompleted = index <= currentStep;
+        final isLast = index == _steps.length - 1;
 
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Column(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isCompleted ? AppColors.primary : AppColors.outlineVariant,
-                ),
-                child: Center(
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
+              children: [
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isCompleted ? AppColors.primary : AppColors.surfaceVariant,
+                    border: Border.all(
+                      color: isCompleted ? AppColors.primary : AppColors.outline,
+                      width: 2,
+                    ),
+                  ),
                   child: isCompleted
                       ? const Icon(
                           Icons.check,
-                          size: 16,
+                          size: 12,
                           color: AppColors.onPrimary,
                         )
-                      : Text(
-                          stepNumber,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.onSurfaceVariant,
-                          ),
-                        ),
+                      : null,
                 ),
-              ),
-              if (!isLast)
-                Expanded(
-                  child: Container(
+                if (!isLast)
+                  Container(
                     width: 2,
-                    color: isCompleted ? AppColors.primary : AppColors.outlineVariant,
+                    height: 24,
+                    color: index < currentStep ? AppColors.primary : AppColors.outlineVariant,
+                  ),
+              ],
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  _steps[index],
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: isCompleted ? FontWeight.w600 : FontWeight.normal,
+                    color: isCompleted ? AppColors.onSurface : AppColors.onSurfaceVariant,
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: isLast ? 0 : 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: isCompleted ? AppColors.onSurface : AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                ],
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      }),
     );
   }
 }

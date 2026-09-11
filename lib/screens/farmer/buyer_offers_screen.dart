@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/offer_service.dart';
+import '../../services/transaction_service.dart';
 import '../../theme/app_colors.dart';
 
 class BuyerOffersScreen extends StatefulWidget {
@@ -11,6 +12,7 @@ class BuyerOffersScreen extends StatefulWidget {
 
 class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
   final OfferService _offerService = OfferService();
+  final TransactionService _transactionService = TransactionService();
 
   bool _isLoading = true;
   String? _errorMessage;
@@ -45,9 +47,62 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
     }
   }
 
+  Map<String, dynamic>? _safeMap(dynamic value) {
+    if (value is Map<String, dynamic>) {
+      return value;
+    }
+    if (value is Map) {
+      return Map<String, dynamic>.from(value);
+    }
+    return null;
+  }
+
+  double _parseDouble(dynamic val) {
+    if (val == null) return 0.0;
+    if (val is num) return val.toDouble();
+    return double.tryParse(val.toString().replaceAll(RegExp(r'[^0-9.-]'), '')) ?? 0.0;
+  }
+
+  double _extractPrice(Map<String, dynamic> offer) {
+    if (offer['offer_price'] != null) {
+      final p = _parseDouble(offer['offer_price']);
+      if (p > 0) return p;
+    }
+    if (offer['offered_price'] != null) {
+      final p = _parseDouble(offer['offered_price']);
+      if (p > 0) return p;
+    }
+    if (offer['price'] != null) {
+      final p = _parseDouble(offer['price']);
+      if (p > 0) return p;
+    }
+    return 0.0;
+  }
+
+  double _extractQuantity(Map<String, dynamic> offer, Map<String, dynamic>? lot) {
+    if (offer['quantity'] != null) {
+      final q = _parseDouble(offer['quantity']);
+      if (q > 0) return q;
+    }
+    if (lot != null && lot['quantity'] != null) {
+      final q = _parseDouble(lot['quantity']);
+      if (q > 0) return q;
+    }
+    return 0.0;
+  }
+
+  String _extractCrop(Map<String, dynamic> offer, Map<String, dynamic>? lot) {
+    if (lot != null && lot['crop'] != null && lot['crop'].toString().trim().isNotEmpty) {
+      return lot['crop'].toString().trim();
+    }
+    if (offer['crop'] != null && offer['crop'].toString().trim().isNotEmpty) {
+      return offer['crop'].toString().trim();
+    }
+    return 'Produce';
+  }
+
   String _formatPrice(dynamic rawPrice) {
-    if (rawPrice == null) return '₹0/qtl';
-    final val = rawPrice is num ? rawPrice.toDouble() : double.tryParse(rawPrice.toString()) ?? 0.0;
+    final val = _parseDouble(rawPrice);
     if (val % 1 == 0) {
       return '₹${val.toInt().toString().replaceAllMapped(RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'), (m) => '${m[1]},')}/qtl';
     }
@@ -55,8 +110,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
   }
 
   String _formatQuantity(dynamic rawQty) {
-    if (rawQty == null) return '0 qtl';
-    final val = rawQty is num ? rawQty.toDouble() : double.tryParse(rawQty.toString()) ?? 0.0;
+    final val = _parseDouble(rawQty);
     return val % 1 == 0 ? '${val.toInt()} qtl' : '$val qtl';
   }
 
@@ -103,7 +157,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
     });
 
     try {
-      await _offerService.declineOffer(offerId: offerId);
+      await _transactionService.rejectOffer(offerId);
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -137,33 +191,71 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
   Future<void> _onAcceptOffer(String offerId) async {
     if (_processingOfferIds.contains(offerId)) return;
 
+    final offer = _offers.firstWhere(
+      (o) => o['id']?.toString() == offerId,
+      orElse: () => <String, dynamic>{},
+    );
+
+    if (offer.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Offer details could not be found.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    final lotData = _safeMap(offer['lots']);
+    final lotId = offer['lot_id']?.toString() ?? lotData?['id']?.toString() ?? '';
+    final buyerId = offer['buyer_id']?.toString() ?? '';
+    final crop = _extractCrop(offer, lotData);
+    final quantity = _extractQuantity(offer, lotData);
+    final agreedPrice = _extractPrice(offer);
+
+    if (lotId.isEmpty || buyerId.isEmpty || quantity <= 0 || agreedPrice <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Incomplete offer details. Cannot proceed with acceptance.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _processingOfferIds.add(offerId);
     });
 
     try {
-      await _offerService.acceptOffer(offerId: offerId);
-      await _offerService.createTransactionFromOffer(offerId: offerId);
+      await _transactionService.acceptOfferAndCreateTransaction(
+        offerId: offerId,
+        lotId: lotId,
+        buyerId: buyerId,
+        crop: crop,
+        quantity: quantity,
+        agreedPrice: agreedPrice,
+      );
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Offer accepted successfully'),
+          content: Text('Offer accepted successfully! Deal contract created.'),
           duration: Duration(seconds: 2),
         ),
       );
 
       await _fetchFarmerOffers();
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to accept offer. Please try again.'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text('Failed to accept offer: ${e.toString().replaceAll('Exception: ', '')}'),
+          duration: const Duration(seconds: 2),
         ),
       );
     } finally {
@@ -179,9 +271,9 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final latestLot = _offers.isNotEmpty ? _offers.first['lots'] as Map<String, dynamic>? : null;
-    final summaryCrop = latestLot?['crop']?.toString() ?? 'Crop Produce';
-    final summaryQty = _formatQuantity(latestLot?['quantity']);
+    final latestLot = _offers.isNotEmpty ? _safeMap(_offers.first['lots']) : null;
+    final summaryCrop = latestLot != null ? _extractCrop(_offers.first, latestLot) : 'Crop Produce';
+    final summaryQty = latestLot != null ? _formatQuantity(_extractQuantity(_offers.first, latestLot)) : '0 qtl';
     final summaryQuality = latestLot?['quality']?.toString() ?? 'Standard';
     final summaryLocation = latestLot?['location']?.toString() ?? 'Local Mandi';
 
@@ -287,7 +379,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.gavel_outlined,
                                     size: 56,
                                     color: AppColors.outline,
@@ -314,14 +406,15 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
                         else
                           ..._offers.map((offer) {
                             final offerId = offer['id']?.toString() ?? '';
-                            final lot = offer['lots'] as Map<String, dynamic>?;
-                            final profile = offer['profiles'] as Map<String, dynamic>?;
+                            final lot = _safeMap(offer['lots']);
+                            final profile = _safeMap(offer['profiles']);
 
                             final buyerName = profile?['name']?.toString() ?? 'Verified Buyer';
                             final buyerLocation = profile?['location']?.toString() ?? lot?['location']?.toString() ?? 'Direct Buyer';
-                            final demand = _formatQuantity(offer['quantity']);
-                            final offeredPrice = _formatPrice(offer['offer_price']);
+                            final demand = _formatQuantity(_extractQuantity(offer, lot));
+                            final offeredPrice = _formatPrice(_extractPrice(offer));
                             final status = _formatStatus(offer['status']);
+                            final isPending = status.toLowerCase() == 'pending';
                             final isProcessing = _processingOfferIds.contains(offerId);
 
                             return Card(
@@ -408,33 +501,35 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
                                       icon: Icons.account_balance_wallet_outlined,
                                       isHighlighted: true,
                                     ),
-                                    const SizedBox(height: 14),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: OutlinedButton(
-                                            onPressed: isProcessing ? null : () => _onDecline(offerId),
-                                            child: const Text('Decline'),
+                                    if (isPending) ...[
+                                      const SizedBox(height: 14),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: OutlinedButton(
+                                              onPressed: isProcessing ? null : () => _onDecline(offerId),
+                                              child: const Text('Decline'),
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: ElevatedButton(
-                                            onPressed: isProcessing ? null : () => _onAcceptOffer(offerId),
-                                            child: isProcessing
-                                                ? const SizedBox(
-                                                    width: 20,
-                                                    height: 20,
-                                                    child: CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      color: AppColors.onPrimary,
-                                                    ),
-                                                  )
-                                                : const Text('Accept Offer'),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: ElevatedButton(
+                                              onPressed: isProcessing ? null : () => _onAcceptOffer(offerId),
+                                              child: isProcessing
+                                                  ? const SizedBox(
+                                                      width: 20,
+                                                      height: 20,
+                                                      child: CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        color: AppColors.onPrimary,
+                                                      ),
+                                                    )
+                                                  : const Text('Accept Offer'),
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
+                                        ],
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),

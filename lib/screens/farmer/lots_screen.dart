@@ -1,57 +1,100 @@
 import 'package:flutter/material.dart';
+import '../../services/lot_service.dart';
 import '../../theme/app_colors.dart';
+import 'buyer_offers_screen.dart';
 import 'create_lot_screen.dart';
 import 'simulator_screen.dart';
 
-class LotsScreen extends StatelessWidget {
+class LotsScreen extends StatefulWidget {
   const LotsScreen({super.key});
 
-  static final List<_FarmerLot> _dummyLots = [
-    _FarmerLot(
-      id: 'KS-1001',
-      crop: 'Wheat',
-      quantity: '120 qtl',
-      quality: 'Grade A',
-      askingPrice: '₹2,480/qtl',
-      status: 'Active',
-      offersCount: 3,
-    ),
-    _FarmerLot(
-      id: 'KS-1002',
-      crop: 'Rice (Basmati)',
-      quantity: '60 qtl',
-      quality: 'Premium',
-      askingPrice: '₹3,200/qtl',
-      status: 'Active',
-      offersCount: 1,
-    ),
-    _FarmerLot(
-      id: 'KS-1003',
-      crop: 'Mustard',
-      quantity: '45 qtl',
-      quality: 'Standard',
-      askingPrice: '₹5,100/qtl',
-      status: 'Sold',
-      offersCount: 4,
-    ),
-  ];
+  @override
+  State<LotsScreen> createState() => _LotsScreenState();
+}
 
-  void _navigateToCreateLot(BuildContext context) {
-    Navigator.push(
+class _LotsScreenState extends State<LotsScreen> {
+  final LotService _lotService = LotService();
+
+  bool _isLoading = true;
+  String? _errorMessage;
+  List<Map<String, dynamic>> _lots = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLots();
+  }
+
+  Future<void> _fetchLots() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final lots = await _lotService.getFarmerLots();
+      if (!mounted) return;
+      setState(() {
+        _lots = lots;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Failed to load produce lots: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _navigateToCreateLot(BuildContext context) async {
+    final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (context) => const CreateLotScreen(),
       ),
     );
+
+    if (result == true) {
+      await _fetchLots();
+    }
   }
 
-  void _navigateToSimulator(BuildContext context) {
+  void _navigateToBuyerOffers() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const SimulatorScreen(),
+        builder: (context) => const BuyerOffersScreen(),
       ),
     );
+  }
+
+  double _parseDouble(dynamic val) {
+    if (val == null) return 0.0;
+    if (val is num) return val.toDouble();
+    return double.tryParse(val.toString().replaceAll(RegExp(r'[^0-9.-]'), '')) ?? 0.0;
+  }
+
+  String _formatQuantity(dynamic rawQty) {
+    final val = _parseDouble(rawQty);
+    return val % 1 == 0 ? '${val.toInt()} qtl' : '$val qtl';
+  }
+
+  String _formatPrice(dynamic rawPrice) {
+    final val = _parseDouble(rawPrice);
+    if (val % 1 == 0) {
+      return '₹${val.toInt().toString().replaceAllMapped(RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'), (m) => '${m[1]},')}/qtl';
+    }
+    return '₹${val.toStringAsFixed(2)}/qtl';
+  }
+
+  String _formatLotId(dynamic rawId) {
+    if (rawId == null) return 'LOT-N/A';
+    final idStr = rawId.toString();
+    if (idStr.length > 8) {
+      return 'LOT-${idStr.substring(0, 8).toUpperCase()}';
+    }
+    return 'LOT-${idStr.toUpperCase()}';
   }
 
   @override
@@ -60,214 +103,369 @@ class LotsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Lots'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back',
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text('My Produce Lots'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Refresh',
+            onPressed: _fetchLots,
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _navigateToCreateLot(context),
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Create Lot'),
+        icon: const Icon(Icons.add),
+        label: const Text('Post New Lot'),
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Listed Produce',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    '${_dummyLots.length} lots listed',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            ..._dummyLots.map((lot) {
-              final isActive = lot.status == 'Active';
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(
-                    color: AppColors.outlineVariant,
-                    width: 0.8,
-                  ),
-                ),
+        child: RefreshIndicator(
+          onRefresh: _fetchLots,
+          child: ListView(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            children: [
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(18),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 18,
-                                backgroundColor: AppColors.primaryContainer,
-                                child: const Icon(
-                                  Icons.eco_rounded,
-                                  color: AppColors.primary,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    lot.crop,
-                                    style: theme.textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Lot #${lot.id}',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      fontSize: 11,
-                                      color: AppColors.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                          Text(
+                            'Active Inventory',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                            ),
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: isActive
-                                  ? AppColors.primaryContainer
-                                  : AppColors.background,
+                              color: AppColors.primaryContainer,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              lot.status,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: isActive
-                                    ? AppColors.onPrimaryContainer
-                                    : AppColors.outline,
+                              '${_lots.length} Listed Lots',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          borderRadius: BorderRadius.circular(8),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Manage Produce Batches',
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Track real-time lot availability, status, and evaluate market holding returns.',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SimulatorScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.calculate_outlined, size: 18),
+                        label: const Text('Run What-If Price Simulator'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Harvested Produce Lots',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              if (_isLoading)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          _errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: AppColors.error,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                          onPressed: _fetchLots,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else if (_lots.isEmpty)
+                Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.inventory_2_outlined,
+                            size: 56,
+                            color: AppColors.outline,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No Produce Lots Found',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Post your harvested crops to broadcast available volume and receive buyer offers.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: () => _navigateToCreateLot(context),
+                            icon: const Icon(Icons.add),
+                            label: const Text('Post Produce Lot'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              else
+                ..._lots.map((lot) {
+                  final rawId = lot['id'];
+                  final readableLotId = _formatLotId(rawId);
+                  final crop = lot['crop']?.toString() ?? 'Produce';
+                  final quantity = _formatQuantity(lot['quantity']);
+                  final askingPrice = _formatPrice(lot['asking_price']);
+                  final quality = lot['quality']?.toString() ?? 'Standard';
+                  final rawStatus = lot['status']?.toString() ?? 'Active';
+                  final isActive =
+                      (lot['status']?.toString().toLowerCase().trim() == 'active');
+
+                  final dynamic offersRaw = lot['offers'];
+                  int offerCount = 0;
+                  if (offersRaw is List) {
+                    offerCount = offersRaw.length;
+                  } else if (lot['offers_count'] != null) {
+                    offerCount = _parseDouble(lot['offers_count']).toInt();
+                  }
+
+                  final offerText = offerCount > 0 ? '$offerCount Offers' : 'View Offers';
+
+                  return Card(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: _navigateToBuyerOffers,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Quantity',
-                                  style: theme.textTheme.bodyMedium?.copyWith(fontSize: 11),
+                                  crop,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    InkWell(
+                                      borderRadius: BorderRadius.circular(6),
+                                      onTap: _navigateToBuyerOffers,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.secondaryContainer,
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(
+                                              Icons.local_offer_outlined,
+                                              size: 13,
+                                              color: AppColors.secondary,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              offerText,
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.secondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: isActive
+                                            ? AppColors.primaryContainer
+                                            : AppColors.surfaceVariant,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        rawStatus.toUpperCase(),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: isActive
+                                              ? AppColors.primary
+                                              : AppColors.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              readableLotId,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: AppColors.outline,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                            const Divider(height: 20, color: AppColors.outlineVariant),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
                                 Text(
-                                  lot.quantity,
+                                  'Available Volume',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: AppColors.onSurfaceVariant,
+                                  ),
+                                ),
+                                Text(
+                                  quantity,
                                   style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Asking Price',
-                                  style: theme.textTheme.bodyMedium?.copyWith(fontSize: 11),
+                                  'Quality Grade',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: AppColors.onSurfaceVariant,
+                                  ),
                                 ),
-                                const SizedBox(height: 2),
                                 Text(
-                                  lot.askingPrice,
+                                  quality,
                                   style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Asking Rate',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: AppColors.onSurfaceVariant,
+                                  ),
+                                ),
+                                Text(
+                                  askingPrice,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
                                     color: AppColors.primary,
                                   ),
                                 ),
                               ],
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  'Buyer Offers',
-                                  style: theme.textTheme.bodyMedium?.copyWith(fontSize: 11),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '${lot.offersCount} Offers',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.secondary,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const SimulatorScreen(),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.analytics_outlined, size: 16),
+                                label: const Text('Test What-If / Simulate Return'),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 38,
-                        child: OutlinedButton.icon(
-                          onPressed: () => _navigateToSimulator(context),
-                          icon: const Icon(Icons.tune_rounded, size: 18),
-                          label: const Text('Test What-If / Simulate Return'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ],
+                    ),
+                  );
+                }),
+
+              const SizedBox(height: 80),
+            ],
+          ),
         ),
       ),
     );
   }
-}
-
-class _FarmerLot {
-  final String id;
-  final String crop;
-  final String quantity;
-  final String quality;
-  final String askingPrice;
-  final String status;
-  final int offersCount;
-
-  _FarmerLot({
-    required this.id,
-    required this.crop,
-    required this.quantity,
-    required this.quality,
-    required this.askingPrice,
-    required this.status,
-    required this.offersCount,
-  });
 }
