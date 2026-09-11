@@ -174,7 +174,7 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Procurement Index',
+                            context.tr('procurement_index'),
                             style: theme.textTheme.titleMedium?.copyWith(
                               color: AppColors.onSurfaceVariant,
                             ),
@@ -188,9 +188,9 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
                               color: AppColors.primaryContainer,
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Text(
-                              'Active Market',
-                              style: TextStyle(
+                            child: Text(
+                              context.tr('active_market'),
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.primary,
@@ -212,7 +212,7 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            '/ quintal benchmark (Wheat)',
+                            context.tr('per_quintal_benchmark_wheat'),
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: AppColors.onSurfaceVariant,
                             ),
@@ -221,7 +221,7 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Direct procurement saves up to 8% on intermediary Mandi handling and commission charges.',
+                        context.tr('direct_procurement_savings_desc'),
                         style: theme.textTheme.bodyMedium,
                       ),
                     ],
@@ -268,7 +268,7 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
                               Row(
                                 children: [
                                   Text(
-                                    'Post Commodity Demand',
+                                    context.tr('post_commodity_demand_title'),
                                     style: theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -282,7 +282,7 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: Text(
-                                        '$_activeDemandCount Active',
+                                        context.tr('active_demands_badge', args: {'count': '$_activeDemandCount'}),
                                         style: const TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.bold,
@@ -294,7 +294,7 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Broadcast your required quantity, target price & delivery location',
+                                context.tr('broadcast_demand_desc'),
                                 style: theme.textTheme.bodyMedium,
                               ),
                             ],
@@ -346,7 +346,7 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Browse Farmer Produce Lots',
+                                context.tr('browse_farmer_produce_lots'),
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -400,14 +400,14 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'My Submitted Offers',
+                                context.tr('my_submitted_offers_title'),
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Track pending bids, accepted deals & farmer counter-proposals',
+                                context.tr('my_submitted_offers_desc'),
                                 style: theme.textTheme.bodyMedium,
                               ),
                             ],
@@ -434,7 +434,7 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Direct Farmer Opportunities',
+                      context.tr('direct_farmer_opportunities'),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -448,7 +448,7 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
                           ),
                         );
                       },
-                      child: const Text('View All'),
+                      child: Text(context.tr('view_all')),
                     ),
                   ],
                 ),
@@ -478,7 +478,7 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
                     padding: const EdgeInsets.all(20),
                     child: Center(
                       child: Text(
-                        'No active farmer lots listed currently.',
+                        context.tr('no_active_farmer_lots'),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: AppColors.onSurfaceVariant,
                         ),
@@ -547,7 +547,10 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Volume: $formattedQuantity • $rawQuality',
+                                  context.tr('volume_with_quality', args: {
+                                    'volume': formattedQuantity,
+                                    'quality': rawQuality,
+                                  }),
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: AppColors.onSurfaceVariant,
                                   ),

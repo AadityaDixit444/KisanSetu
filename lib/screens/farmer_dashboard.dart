@@ -71,7 +71,7 @@ class FarmerDashboard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Meerut Mandi Rate',
+                          context.tr('mandi_rate_meerut'),
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: AppColors.onSurfaceVariant,
                           ),
@@ -85,9 +85,9 @@ class FarmerDashboard extends StatelessWidget {
                             color: AppColors.primaryContainer,
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Text(
-                            '+4.2% Today',
-                            style: TextStyle(
+                          child: Text(
+                            context.tr('trend_today_4_2'),
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: AppColors.primary,
@@ -109,7 +109,7 @@ class FarmerDashboard extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          '/ quintal (Wheat)',
+                          context.tr('per_quintal_wheat'),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: AppColors.onSurfaceVariant,
                           ),
@@ -118,7 +118,7 @@ class FarmerDashboard extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Direct aggregate bids currently yield ₹120-150/qtl higher realization.',
+                      context.tr('direct_bids_realization_desc'),
                       style: theme.textTheme.bodyMedium,
                     ),
                   ],
@@ -160,14 +160,14 @@ class FarmerDashboard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Market Recommendation',
+                              context.tr('market_recommendation_title'),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Get HOLD / SELL guidance based on live mandi conditions',
+                              context.tr('market_recommendation_desc'),
                               style: theme.textTheme.bodyMedium,
                             ),
                           ],
@@ -219,14 +219,14 @@ class FarmerDashboard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Post New Produce Lot',
+                              context.tr('post_new_produce_lot_title'),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'List harvested crop with quality, quantity & asking price',
+                              context.tr('post_new_produce_lot_desc'),
                               style: theme.textTheme.bodyMedium,
                             ),
                           ],
@@ -278,14 +278,14 @@ class FarmerDashboard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'My Active Lots',
+                              context.tr('my_active_lots_title'),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'View listed crops, active lots & manage offers',
+                              context.tr('my_active_lots_desc'),
                               style: theme.textTheme.bodyMedium,
                             ),
                           ],
@@ -337,14 +337,14 @@ class FarmerDashboard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Buyer Demand Board',
+                              context.tr('buyer_demand_board_title'),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'View active commodity requirements posted by buyers',
+                              context.tr('buyer_demand_board_desc'),
                               style: theme.textTheme.bodyMedium,
                             ),
                           ],
@@ -396,14 +396,14 @@ class FarmerDashboard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Dispatches & Deals',
+                              context.tr('dispatches_deals_title'),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Track accepted deals, pickups & direct payments',
+                              context.tr('dispatches_deals_desc'),
                               style: theme.textTheme.bodyMedium,
                             ),
                           ],
@@ -455,14 +455,14 @@ class FarmerDashboard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Intelligent Buyer Matching',
+                              context.tr('intelligent_matching_title'),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Compare net realisable rates across institutional buyers',
+                              context.tr('intelligent_matching_desc'),
                               style: theme.textTheme.bodyMedium,
                             ),
                           ],
@@ -489,7 +489,7 @@ class FarmerDashboard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Top Buyer Opportunities',
+                    context.tr('top_buyer_opportunities'),
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -503,7 +503,7 @@ class FarmerDashboard extends StatelessWidget {
                         ),
                       );
                     },
-                    child: const Text('View All'),
+                    child: Text(context.tr('view_all')),
                   ),
                 ],
               ),
@@ -512,9 +512,9 @@ class FarmerDashboard extends StatelessWidget {
             // Buyer Opportunity Cards
             _BuyerOpportunityCard(
               buyerName: 'AgroCorp India Ltd.',
-              location: 'Delhi NCR • 65 km away',
-              demandSummary: 'Wheat • Need 500 Quintals',
-              netRate: '₹2,520/qtl net',
+              location: context.tr('delhi_ncr_distance'),
+              demandSummary: context.tr('wheat_demand_500'),
+              netRate: context.tr('net_rate_2520'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -526,9 +526,9 @@ class FarmerDashboard extends StatelessWidget {
             ),
             _BuyerOpportunityCard(
               buyerName: 'Kisan Fresh Procurement',
-              location: 'Noida Hub • 48 km away',
-              demandSummary: 'Wheat • Need 200 Quintals',
-              netRate: '₹2,490/qtl net',
+              location: context.tr('noida_hub_distance'),
+              demandSummary: context.tr('wheat_demand_200'),
+              netRate: context.tr('net_rate_2490'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -633,7 +633,7 @@ class _BuyerOpportunityCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Buyer Demand',
+                    context.tr('buyer_demand_label'),
                     style: theme.textTheme.bodyMedium?.copyWith(fontSize: 12),
                   ),
                   Text(
@@ -655,7 +655,7 @@ class _BuyerOpportunityCard extends StatelessWidget {
                   padding: EdgeInsets.zero,
                 ),
                 onPressed: onTap,
-                child: const Text('Compare Net Price', style: TextStyle(fontSize: 14)),
+                child: Text(context.tr('compare_net_price'), style: const TextStyle(fontSize: 14)),
               ),
             ),
           ],
