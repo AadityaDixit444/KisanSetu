@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../localization/language_scope.dart';
 import '../theme/app_colors.dart';
+import '../widgets/language_toggle_button.dart';
 import 'notifications_screen.dart';
 import 'farmer/buyer_offers_screen.dart';
 import 'farmer/create_lot_screen.dart';
@@ -22,14 +24,14 @@ class FarmerDashboard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Welcome back,',
+              context.tr('greeting_morning'),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: AppColors.onPrimary.withValues(alpha: 0.85),
               ),
             ),
-            const Text(
-              'Farmer',
-              style: TextStyle(
+            Text(
+              context.tr('role_farmer'),
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
               ),
@@ -37,9 +39,10 @@ class FarmerDashboard extends StatelessWidget {
           ],
         ),
         actions: [
+          const LanguageToggleButton(isLightSurface: false),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
-            tooltip: 'Notifications',
+            tooltip: context.tr('notifications_title'),
             onPressed: () {
               Navigator.push(
                 context,

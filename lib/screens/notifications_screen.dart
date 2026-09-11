@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../localization/language_scope.dart';
 import '../theme/app_colors.dart';
+import '../widgets/language_toggle_button.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -8,16 +10,22 @@ class NotificationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(context.tr('notifications_title')),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: LanguageToggleButton(isLightSurface: false),
+          ),
+        ],
       ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
-          children: const [
+          children: [
             // Notification 1: New Buyer Offer
             Card(
               child: ListTile(
-                leading: CircleAvatar(
+                leading: const CircleAvatar(
                   backgroundColor: AppColors.primaryContainer,
                   child: Icon(
                     Icons.local_offer_outlined,
@@ -25,21 +33,21 @@ class NotificationsScreen extends StatelessWidget {
                   ),
                 ),
                 title: Text(
-                  'New Buyer Offer',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  context.tr('notif_buyer_offer_title'),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  'Kisan Agro Flour Mills offered ₹2,470/qtl for your Wheat lot.\n10 min ago',
+                  context.tr('notif_buyer_offer_desc'),
                 ),
                 isThreeLine: true,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
 
             // Notification 2: Market Alert
             Card(
               child: ListTile(
-                leading: CircleAvatar(
+                leading: const CircleAvatar(
                   backgroundColor: AppColors.tertiaryContainer,
                   child: Icon(
                     Icons.trending_up_rounded,
@@ -47,21 +55,21 @@ class NotificationsScreen extends StatelessWidget {
                   ),
                 ),
                 title: Text(
-                  'Market Alert',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  context.tr('notif_market_alert_title'),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  'Wheat prices increased by 3.4% today in Meerut.\n1 hour ago',
+                  context.tr('notif_market_alert_desc'),
                 ),
                 isThreeLine: true,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
 
             // Notification 3: Offer Update
             Card(
               child: ListTile(
-                leading: CircleAvatar(
+                leading: const CircleAvatar(
                   backgroundColor: AppColors.secondaryContainer,
                   child: Icon(
                     Icons.check_circle_outline_rounded,
@@ -69,21 +77,21 @@ class NotificationsScreen extends StatelessWidget {
                   ),
                 ),
                 title: Text(
-                  'Offer Update',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  context.tr('notif_offer_update_title'),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  'Your offer for Wheat 150 qtl was accepted.\n3 hours ago',
+                  context.tr('notif_offer_update_desc'),
                 ),
                 isThreeLine: true,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
 
             // Notification 4: Logistics Update
             Card(
               child: ListTile(
-                leading: CircleAvatar(
+                leading: const CircleAvatar(
                   backgroundColor: AppColors.primaryContainer,
                   child: Icon(
                     Icons.local_shipping_outlined,
@@ -91,11 +99,11 @@ class NotificationsScreen extends StatelessWidget {
                   ),
                 ),
                 title: Text(
-                  'Logistics Update',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  context.tr('notif_logistics_title'),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  'Transport has been arranged for your Wheat shipment.\nYesterday',
+                  context.tr('notif_logistics_desc'),
                 ),
                 isThreeLine: true,
               ),
