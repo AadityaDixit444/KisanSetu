@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'transaction_screen.dart';
 
 class TransportTrackingScreen extends StatelessWidget {
@@ -60,7 +62,11 @@ class TransportTrackingScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transport Tracking'),
+        title: Text(context.tr('transport_tracking_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: ListView(
@@ -90,8 +96,8 @@ class TransportTrackingScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Transport Arranged',
+                          Text(
+                            context.tr('transport_arranged'),
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
@@ -100,7 +106,7 @@ class TransportTrackingScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Vehicle assigned and scheduled for pickup.',
+                            context.tr('vehicle_assigned_desc'),
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: AppColors.onPrimaryContainer,
                               fontWeight: FontWeight.w500,
@@ -125,7 +131,7 @@ class TransportTrackingScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Deal Summary',
+                          context.tr('deal_summary'),
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -184,7 +190,7 @@ class TransportTrackingScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Transport Details',
+                      context.tr('transport_details'),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -227,7 +233,7 @@ class TransportTrackingScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Delivery Timeline',
+                      context.tr('delivery_timeline'),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -276,7 +282,7 @@ class TransportTrackingScreen extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: () => _onViewDeliveryDetails(context),
                 icon: const Icon(Icons.receipt_long_rounded),
-                label: const Text('View Delivery Details'),
+                label: Text(context.tr('view_delivery_details')),
               ),
             ),
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/market_price_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'simulator_screen.dart';
 
 class MarketScreen extends StatefulWidget {
@@ -271,14 +273,15 @@ class _MarketScreenState extends State<MarketScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Back',
+          tooltip: context.tr('common_back'),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Market Intelligence'),
+        title: Text(context.tr('market_intelligence_title')),
         actions: [
+          const Center(child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh',
+            tooltip: context.tr('refresh_tooltip'),
             onPressed: _fetchMarketRates,
           ),
         ],
@@ -293,7 +296,7 @@ class _MarketScreenState extends State<MarketScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'Select Commodity',
+                  context.tr('select_commodity'),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -333,7 +336,7 @@ class _MarketScreenState extends State<MarketScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'Select Mandi',
+                  context.tr('select_mandi'),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -356,7 +359,7 @@ class _MarketScreenState extends State<MarketScreen> {
                     filled: true,
                     fillColor: theme.colorScheme.surface,
                   ),
-                  hint: const Text('Select mandi'),
+                  hint: Text(context.tr('select_mandi')),
                   items: _availableMarkets.map((market) {
                     return DropdownMenuItem<String>(
                       value: market,
@@ -389,7 +392,7 @@ class _MarketScreenState extends State<MarketScreen> {
                         children: [
                           Expanded(
                             child: Text(
-                              '$_selectedCrop Market Rate',
+                              context.trWithArgs('crop_market_rate', {'crop': _selectedCrop}),
                               style:
                                   theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
@@ -408,7 +411,7 @@ class _MarketScreenState extends State<MarketScreen> {
                               borderRadius: BorderRadius.circular(7),
                             ),
                             child: const Text(
-                              'Live Data',
+                              context.tr('live_data_badge'),
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
@@ -528,7 +531,7 @@ class _MarketScreenState extends State<MarketScreen> {
                         ),
                       ] else ...[
                         Text(
-                          'Rate unavailable',
+                          context.tr('rate_unavailable'),
                           style:
                               theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
@@ -537,7 +540,7 @@ class _MarketScreenState extends State<MarketScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'No market record is available for $_selectedCrop at $_selectedMarket.',
+                          context.trWithArgs('no_data_available_crop_market', {'crop': _selectedCrop, 'market': _selectedMarket}),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: AppColors.onSurfaceVariant,
                           ),
@@ -585,7 +588,7 @@ class _MarketScreenState extends State<MarketScreen> {
                                 CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Market Recommendation',
+                                context.tr('market_recommendation'),
                                 style: theme.textTheme.titleMedium
                                     ?.copyWith(
                                   fontWeight: FontWeight.bold,
@@ -593,7 +596,7 @@ class _MarketScreenState extends State<MarketScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Based on current price movement and buyer demand',
+                                context.tr('based_on_price_movement'),
                                 style:
                                     theme.textTheme.bodySmall?.copyWith(
                                   color: AppColors.onSurfaceVariant,
@@ -672,7 +675,7 @@ class _MarketScreenState extends State<MarketScreen> {
                                 CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'What-If Market Simulator',
+                                context.tr('what_if_market_simulator'),
                                 style: theme.textTheme.titleMedium
                                     ?.copyWith(
                                   fontWeight: FontWeight.bold,
@@ -680,7 +683,7 @@ class _MarketScreenState extends State<MarketScreen> {
                               ),
                               const SizedBox(height: 3),
                               Text(
-                                'Compare Sell Now vs Hold scenarios with storage and transport costs.',
+                                context.tr('compare_sell_hold_desc'),
                                 style:
                                     theme.textTheme.bodySmall?.copyWith(
                                   color: AppColors.onSurfaceVariant,
@@ -709,7 +712,7 @@ class _MarketScreenState extends State<MarketScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'Mandi Comparison',
+                  context.tr('mandi_comparison'),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -741,7 +744,7 @@ class _MarketScreenState extends State<MarketScreen> {
                         const SizedBox(height: 12),
                         OutlinedButton(
                           onPressed: _fetchMarketRates,
-                          child: const Text('Retry'),
+                          child: Text(context.tr('common_retry')),
                         ),
                       ],
                     ),
@@ -763,7 +766,7 @@ class _MarketScreenState extends State<MarketScreen> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'No recorded rates found',
+                            context.tr('no_recorded_rates_found'),
                             style:
                                 theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.bold,
@@ -771,7 +774,7 @@ class _MarketScreenState extends State<MarketScreen> {
                           ),
                           const SizedBox(height: 5),
                           Text(
-                            'No data is currently available for $_selectedCrop at $_selectedMarket.',
+                            context.trWithArgs('no_data_available_crop_market', {'crop': _selectedCrop, 'market': _selectedMarket}),
                             textAlign: TextAlign.center,
                             style:
                                 theme.textTheme.bodySmall?.copyWith(
@@ -802,7 +805,7 @@ class _MarketScreenState extends State<MarketScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'Data shown is based on the latest market records available in KisanSetu.',
+                  context.tr('data_shown_based_on_records'),
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: AppColors.outline,

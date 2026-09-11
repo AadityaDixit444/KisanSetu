@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/demand_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 
 class PostDemandScreen extends StatefulWidget {
   const PostDemandScreen({super.key});
@@ -96,7 +98,7 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Purchase demand broadcasted successfully!'),
+          content: Text(context.tr('msg_demand_broadcasted')),
           backgroundColor: AppColors.primary,
         ),
       );
@@ -125,7 +127,11 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Post Commodity Demand'),
+        title: Text(context.tr('post_demand_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: Form(
@@ -143,7 +149,7 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Procurement Requirements',
+                              context.tr('procurement_requirements'),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -152,7 +158,7 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                             DropdownButtonFormField<String>(
                               value: _selectedCrop,
                               decoration: const InputDecoration(
-                                labelText: 'Commodity Crop',
+                                labelText: context.tr('commodity_crop'),
                                 prefixIcon: Icon(Icons.agriculture_rounded),
                               ),
                               items: _cropOptions.map((crop) {
@@ -167,13 +173,13 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                               controller: _quantityController,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               decoration: const InputDecoration(
-                                labelText: 'Required Volume (Quintals)',
+                                labelText: context.tr('required_volume_qtl'),
                                 prefixIcon: Icon(Icons.scale_rounded),
                               ),
                               validator: (val) {
-                                if (val == null || val.trim().isEmpty) return 'Enter quantity';
+                                if (val == null || val.trim().isEmpty) return context.tr('err_enter_qty');
                                 final parsed = double.tryParse(val.trim());
-                                if (parsed == null || parsed <= 0) return 'Must be greater than 0';
+                                if (parsed == null || parsed <= 0) return context.tr('err_must_be_gt_0');
                                 return null;
                               },
                             ),
@@ -181,7 +187,7 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                             DropdownButtonFormField<String>(
                               value: _selectedQuality,
                               decoration: const InputDecoration(
-                                labelText: 'Target Quality Standard',
+                                labelText: context.tr('target_quality_standard'),
                                 prefixIcon: Icon(Icons.verified_outlined),
                               ),
                               items: _qualityOptions.map((q) {
@@ -196,13 +202,13 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                               controller: _targetPriceController,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               decoration: const InputDecoration(
-                                labelText: 'Target Buying Price (₹/Quintal)',
+                                labelText: context.tr('target_buying_price'),
                                 prefixIcon: Icon(Icons.currency_rupee_rounded),
                               ),
                               validator: (val) {
-                                if (val == null || val.trim().isEmpty) return 'Enter target price';
+                                if (val == null || val.trim().isEmpty) return context.tr('err_enter_target_price');
                                 final parsed = double.tryParse(val.trim());
-                                if (parsed == null || parsed <= 0) return 'Must be greater than 0';
+                                if (parsed == null || parsed <= 0) return context.tr('err_must_be_gt_0');
                                 return null;
                               },
                             ),
@@ -210,12 +216,12 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                             TextFormField(
                               controller: _locationController,
                               decoration: const InputDecoration(
-                                labelText: 'Delivery Location / Depot',
+                                labelText: context.tr('delivery_location_depot'),
                                 prefixIcon: Icon(Icons.location_on_outlined),
-                                hintText: 'e.g., Meerut Depot, Partapur',
+                                hintText: context.tr('hint_delivery_location'),
                               ),
                               validator: (val) {
-                                if (val == null || val.trim().isEmpty) return 'Enter delivery location';
+                                if (val == null || val.trim().isEmpty) return context.tr('err_enter_delivery_location');
                                 return null;
                               },
                             ),
@@ -225,12 +231,12 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                               onTap: _selectDate,
                               child: InputDecorator(
                                 decoration: const InputDecoration(
-                                  labelText: 'Required By Date',
+                                  labelText: context.tr('required_by_date'),
                                   prefixIcon: Icon(Icons.calendar_today_outlined),
                                 ),
                                 child: Text(
                                   _selectedRequiredBy == null
-                                      ? 'Select required-by date (optional)'
+                                      ? context.tr('select_required_date_optional')
                                       : _formatDate(_selectedRequiredBy!),
                                   style: TextStyle(
                                     color: _selectedRequiredBy == null
@@ -269,8 +275,8 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                               color: AppColors.onPrimary,
                             ),
                           )
-                        : const Text(
-                            'Broadcast Demand',
+                        : Text(
+                            context.tr('broadcast_demand_btn'),
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                   ),

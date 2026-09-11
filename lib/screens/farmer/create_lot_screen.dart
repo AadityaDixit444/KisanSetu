@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/lot_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 
 class CreateLotScreen extends StatefulWidget {
   const CreateLotScreen({super.key});
@@ -72,7 +74,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Produce lot listed successfully!'),
+          content: Text(context.tr('produce_lot_listed_success')),
           backgroundColor: AppColors.primary,
         ),
       );
@@ -82,7 +84,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to create lot: ${e.toString().replaceAll('Exception: ', '')}'),
+          content: Text(context.trWithArgs('failed_create_lot', {'error': e.toString().replaceAll('Exception: ', '')})),
           backgroundColor: AppColors.error,
         ),
       );
@@ -101,7 +103,11 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('List Produce Lot'),
+        title: Text(context.tr('list_produce_lot_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: Form(
@@ -119,7 +125,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Harvested Lot Details',
+                              context.tr('harvested_lot_details'),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -128,7 +134,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
                             DropdownButtonFormField<String>(
                               value: _selectedCrop,
                               decoration: const InputDecoration(
-                                labelText: 'Commodity Crop',
+                                labelText: context.tr('commodity_crop'),
                                 prefixIcon: Icon(Icons.agriculture_rounded),
                               ),
                               items: _cropOptions.map((crop) {
@@ -150,7 +156,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
                               controller: _quantityController,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               decoration: const InputDecoration(
-                                labelText: 'Available Volume (Quintals)',
+                                labelText: context.tr('available_volume_quintals'),
                                 prefixIcon: Icon(Icons.scale_rounded),
                               ),
                               validator: (val) {
@@ -168,7 +174,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
                             DropdownButtonFormField<String>(
                               value: _selectedQuality,
                               decoration: const InputDecoration(
-                                labelText: 'Quality Grade Standard',
+                                labelText: context.tr('quality_grade_standard'),
                                 prefixIcon: Icon(Icons.verified_outlined),
                               ),
                               items: _qualityOptions.map((grade) {
@@ -190,7 +196,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
                               controller: _askingPriceController,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               decoration: const InputDecoration(
-                                labelText: 'Farmer Asking Rate (₹/Quintal)',
+                                labelText: context.tr('farmer_asking_rate'),
                                 prefixIcon: Icon(Icons.currency_rupee_rounded),
                               ),
                               validator: (val) {
@@ -208,9 +214,9 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
                             TextFormField(
                               controller: _locationController,
                               decoration: const InputDecoration(
-                                labelText: 'Farm Warehouse / Village Depot',
+                                labelText: context.tr('farm_warehouse_depot'),
                                 prefixIcon: Icon(Icons.location_on_outlined),
-                                hintText: 'e.g., Farm Warehouse, Daurala',
+                                hintText: context.tr('hint_farm_warehouse'),
                               ),
                               validator: (val) {
                                 if (val == null || val.trim().isEmpty) {
@@ -248,8 +254,8 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
                               color: AppColors.onPrimary,
                             ),
                           )
-                        : const Text(
-                            'Confirm & List Produce Lot',
+                        : Text(
+                            context.tr('confirm_and_list_produce'),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

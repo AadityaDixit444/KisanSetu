@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'buyer_offers_screen.dart';
 
 class LotDetailsScreen extends StatelessWidget {
@@ -49,7 +51,11 @@ class LotDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lot Details'),
+        title: Text(context.tr('lot_details_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: ListView(
@@ -134,7 +140,7 @@ class LotDetailsScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Available From: 03 Sep 2026',
+                              context.tr('available_from_label'),
                               style: theme.textTheme.bodyMedium,
                             ),
                           ],
@@ -161,7 +167,7 @@ class LotDetailsScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Estimated Net Realisable Price',
+                                  context.tr('estimated_net_realisable_price'),
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                     fontSize: 12,
                                     color: AppColors.onPrimaryContainer,
@@ -195,7 +201,7 @@ class LotDetailsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Produce Specifications',
+                      context.tr('produce_specifications'),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -244,7 +250,7 @@ class LotDetailsScreen extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () => _onViewBuyerOffers(context),
                 icon: const Icon(Icons.local_offer_rounded),
-                label: const Text('View Buyer Offers'),
+                label: Text(context.tr('view_buyer_offers')),
               ),
             ),
             const SizedBox(height: 24),

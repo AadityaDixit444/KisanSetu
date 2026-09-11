@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../services/offer_service.dart';
 import '../../services/transaction_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 
 class BuyerOffersScreen extends StatefulWidget {
   const BuyerOffersScreen({super.key});
@@ -162,9 +164,9 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
 
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Offer declined'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(context.tr('offer_declined_msg')),
+          duration: const Duration(seconds: 2),
         ),
       );
 
@@ -174,9 +176,9 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
 
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to decline offer. Please try again.'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(context.tr('failed_decline_offer')),
+          duration: const Duration(seconds: 2),
         ),
       );
     } finally {
@@ -198,9 +200,9 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
 
     if (offer.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Offer details could not be found.'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(context.tr('err_offer_not_found')),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
@@ -215,9 +217,9 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
 
     if (lotId.isEmpty || buyerId.isEmpty || quantity <= 0 || agreedPrice <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Incomplete offer details. Cannot proceed with acceptance.'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(context.tr('err_incomplete_offer_details')),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
@@ -241,9 +243,9 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
 
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Offer accepted successfully! Deal contract created.'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(context.tr('offer_accepted_success')),
+          duration: const Duration(seconds: 2),
         ),
       );
 
@@ -254,7 +256,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to accept offer: ${e.toString().replaceAll('Exception: ', '')}'),
+          content: Text(context.trWithArgs('failed_accept_offer', {'error': e.toString().replaceAll('Exception: ', '')})),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -279,7 +281,11 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Buyer Offers'),
+        title: Text(context.tr('buyer_offers_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -304,7 +310,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
                               const SizedBox(height: 12),
                               OutlinedButton(
                                 onPressed: _fetchFarmerOffers,
-                                child: const Text('Retry'),
+                                child: Text(context.tr('common_retry')),
                               ),
                             ],
                           ),
@@ -340,7 +346,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
                                           borderRadius: BorderRadius.circular(6),
                                         ),
                                         child: Text(
-                                          '${_offers.length} Offers',
+                                          context.trWithArgs('offers_count_badge', {'count': '${_offers.length}'}),
                                           style: const TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.bold,
@@ -365,7 +371,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
-                            'Received Offers',
+                            context.tr('received_offers_heading'),
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -386,14 +392,14 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
-                                    'No buyer offers received yet',
+                                    context.tr('no_buyer_offers_yet'),
                                     style: theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Offers submitted by prospective buyers will appear here.',
+                                    context.tr('offers_appear_here_desc'),
                                     textAlign: TextAlign.center,
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: AppColors.onSurfaceVariant,
@@ -508,7 +514,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
                                           Expanded(
                                             child: OutlinedButton(
                                               onPressed: isProcessing ? null : () => _onDecline(offerId),
-                                              child: const Text('Decline'),
+                                              child: Text(context.tr('decline_offer_btn')),
                                             ),
                                           ),
                                           const SizedBox(width: 12),
@@ -524,7 +530,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
                                                         color: AppColors.onPrimary,
                                                       ),
                                                     )
-                                                  : const Text('Accept Offer'),
+                                                  : Text(context.tr('accept_offer_btn')),
                                             ),
                                           ),
                                         ],

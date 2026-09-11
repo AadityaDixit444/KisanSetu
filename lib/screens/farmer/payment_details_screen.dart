@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 
 class PaymentDetailsScreen extends StatelessWidget {
   const PaymentDetailsScreen({super.key});
@@ -10,7 +12,11 @@ class PaymentDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Payment Details'),
+        title: Text(context.tr('payment_details_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: ListView(
@@ -40,8 +46,8 @@ class PaymentDetailsScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Payment Pending',
+                          Text(
+                            context.tr('status_payment_pending'),
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
@@ -50,7 +56,7 @@ class PaymentDetailsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Expected within 24 hours after delivery verification',
+                            context.tr('expected_within_24h'),
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: AppColors.onSurfaceVariant,
                             ),
@@ -74,7 +80,7 @@ class PaymentDetailsScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Payment Breakdown',
+                          context.tr('payment_breakdown'),
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -143,7 +149,7 @@ class PaymentDetailsScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: const [
                           Text(
-                            'Final Payable Amount',
+                            context.tr('final_payable_amount'),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
@@ -179,7 +185,7 @@ class PaymentDetailsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Payment Timeline',
+                      context.tr('payment_timeline'),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -224,7 +230,7 @@ class PaymentDetailsScreen extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Payment status will automatically update once the buyer completes bank settlement. The amount will be credited directly to your registered bank account.',
+                        context.tr('payment_auto_update_desc'),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: AppColors.onPrimaryContainer,
                           height: 1.4,

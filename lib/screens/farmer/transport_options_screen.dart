@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../services/logistics_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'transport_tracking_screen.dart';
 
 class TransportOptionsScreen extends StatefulWidget {
@@ -85,7 +87,7 @@ class _TransportOptionsScreenState extends State<TransportOptionsScreen> {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Transport arranged successfully'),
+          content: Text(context.tr('transport_arranged_success')),
           duration: Duration(seconds: 2),
         ),
       );
@@ -125,7 +127,13 @@ class _TransportOptionsScreenState extends State<TransportOptionsScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Transport Options')),
+      appBar: AppBar(
+        title: Text(context.tr('transport_options_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -140,7 +148,7 @@ class _TransportOptionsScreenState extends State<TransportOptionsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Dispatch Route',
+                      context.tr('dispatch_route'),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.onPrimaryContainer,
@@ -156,7 +164,7 @@ class _TransportOptionsScreenState extends State<TransportOptionsScreen> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Meerut Farm  →  Karnal Mandi (118 km)',
+                          context.tr('route_meerut_karnal'),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: AppColors.onPrimaryContainer,
@@ -172,7 +180,7 @@ class _TransportOptionsScreenState extends State<TransportOptionsScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Available Vehicles',
+                context.tr('available_vehicles'),
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -245,7 +253,7 @@ class _TransportOptionsScreenState extends State<TransportOptionsScreen> {
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: const Text(
-                                  'Best Fit',
+                                  context.tr('best_fit_badge'),
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
@@ -302,8 +310,7 @@ class _TransportOptionsScreenState extends State<TransportOptionsScreen> {
                             color: AppColors.onPrimary,
                           ),
                         )
-                      : const Text(
-                          'Select Transport',
+                      : Text(context.tr('select_transport_btn'),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

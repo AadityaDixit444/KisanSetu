@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/demand_service.dart';
 import '../../services/lot_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'demand_lot_selection_screen.dart';
 
 class _ScoredDemand {
@@ -167,14 +169,15 @@ class _MatchingScreenState extends State<MatchingScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Back',
+          tooltip: context.tr('common_back'),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Smart Buyer Matches'),
+        title: Text(context.tr('smart_buyer_matches_title')),
         actions: [
+          const Center(child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh',
+            tooltip: context.tr('refresh_tooltip'),
             onPressed: _fetchAndMatchOpportunities,
           ),
         ],
@@ -202,7 +205,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
                               const SizedBox(height: 12),
                               OutlinedButton(
                                 onPressed: _fetchAndMatchOpportunities,
-                                child: const Text('Retry'),
+                                child: Text(context.tr('common_retry')),
                               ),
                             ],
                           ),
@@ -224,14 +227,14 @@ class _MatchingScreenState extends State<MatchingScreen> {
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
-                                    'No active buyer demands found.',
+                                    context.tr('no_active_buyer_demands_found'),
                                     style: theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
-                                    'When buyers broadcast requirements matching your harvested crops, compatible procurement opportunities will rank here.',
+                                    context.tr('when_buyers_broadcast_desc'),
                                     textAlign: TextAlign.center,
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: AppColors.onSurfaceVariant,
@@ -284,7 +287,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
                                             borderRadius: BorderRadius.circular(6),
                                           ),
                                           child: Text(
-                                            'Compatibility Score: ${item.score}%',
+                                            context.trWithArgs('compatibility_score', {'score': '${item.score}'}),
                                             style: TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.bold,
@@ -338,8 +341,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
                                             ),
                                           );
                                         },
-                                        child: const Text(
-                                          'Select Lot & Respond',
+                                        child: Text(context.tr('select_lot_and_respond'),
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.bold,

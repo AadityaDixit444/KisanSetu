@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'offer_review_screen.dart';
 
 class MakeOfferScreen extends StatefulWidget {
@@ -102,7 +104,11 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Make an Offer'),
+        title: Text(context.tr('make_offer_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: Form(
@@ -135,8 +141,8 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
                                     color: AppColors.primaryContainer,
                                     borderRadius: BorderRadius.circular(6),
                                   ),
-                                  child: const Text(
-                                    'Produce Lot',
+                                  child: Text(
+                                    context.tr('badge_produce_lot'),
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
@@ -147,11 +153,11 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
                               ],
                             ),
                             const Divider(height: 20, color: AppColors.outlineVariant),
-                            _LotInfoRow(label: 'Available Quantity', value: '${widget.quantity} qtl'),
+                            _LotInfoRow(label: context.tr('available_quantity'), value: '${widget.quantity} qtl'),
                             const SizedBox(height: 6),
-                            _LotInfoRow(label: 'Farmer Asking Price', value: '₹${widget.askingPrice}/qtl'),
+                            _LotInfoRow(label: context.tr('farmer_asking_price'), value: '₹${widget.askingPrice}/qtl'),
                             const SizedBox(height: 6),
-                            _LotInfoRow(label: 'Produce Location', value: widget.location),
+                            _LotInfoRow(label: context.tr('produce_location'), value: widget.location),
                           ],
                         ),
                       ),
@@ -167,7 +173,7 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Offer Terms',
+                              context.tr('offer_terms'),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -177,16 +183,16 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
                               controller: _offerPriceController,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               decoration: const InputDecoration(
-                                labelText: 'Offered Price (₹/qtl)',
+                                labelText: context.tr('offered_price_label'),
                                 prefixIcon: Icon(Icons.currency_rupee_rounded),
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Offer price is required';
+                                  return context.tr('err_offer_price_req');
                                 }
                                 final val = double.tryParse(value.trim());
                                 if (val == null || val <= 0) {
-                                  return 'Enter a valid price greater than 0';
+                                  return context.tr('err_valid_price');
                                 }
                                 return null;
                               },
@@ -196,20 +202,20 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
                               controller: _quantityController,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               decoration: InputDecoration(
-                                labelText: 'Offered Quantity (qtl)',
-                                helperText: 'Max available: ${widget.quantity} qtl',
+                                labelText: context.tr('offered_quantity_label'),
+                                helperText: context.trWithArgs('max_available_helper', {'qty': '${widget.quantity} qtl'}),
                                 prefixIcon: const Icon(Icons.scale_rounded),
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Quantity is required';
+                                  return context.tr('err_qty_req');
                                 }
                                 final val = double.tryParse(value.trim());
                                 if (val == null || val <= 0) {
-                                  return 'Enter a valid quantity greater than 0';
+                                  return context.tr('err_valid_qty');
                                 }
                                 if (val > availableQuantity) {
-                                  return 'Cannot exceed available lot quantity (${widget.quantity} qtl)';
+                                  return context.trWithArgs('err_cannot_exceed_qty', {'qty': '${widget.quantity} qtl'});
                                 }
                                 return null;
                               },
@@ -230,7 +236,7 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Estimated Contract Total',
+                              context.tr('estimated_contract_total'),
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                               ),
@@ -264,8 +270,8 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
                   height: 48,
                   child: ElevatedButton(
                     onPressed: _onReviewOffer,
-                    child: const Text(
-                      'Review Offer',
+                    child: Text(
+                      context.tr('review_offer_btn'),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

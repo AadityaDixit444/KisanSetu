@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import '../buyer/make_offer_screen.dart';
 
 class DemandLotSelectionScreen extends StatefulWidget {
@@ -180,11 +182,12 @@ class _DemandLotSelectionScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Lot'),
+        title: Text(context.tr('select_lot_title')),
         actions: [
+          const Center(child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh Lots',
+            tooltip: context.tr('refresh_lots'),
             onPressed: _fetchFarmerMatchingLots,
           ),
         ],
@@ -211,7 +214,7 @@ class _DemandLotSelectionScreenState
                                   MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Buyer Demand Overview',
+                                  context.tr('buyer_demand_overview'),
                                   style: theme.textTheme.titleMedium
                                       ?.copyWith(
                                     fontWeight: FontWeight.bold,
@@ -229,7 +232,7 @@ class _DemandLotSelectionScreenState
                                         BorderRadius.circular(6),
                                   ),
                                   child: const Text(
-                                    'Active Demand',
+                                    context.tr('active_demand_badge'),
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
@@ -279,7 +282,7 @@ class _DemandLotSelectionScreenState
                       padding:
                           const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        'Your Matching Lots',
+                        context.tr('your_matching_lots'),
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -312,7 +315,7 @@ class _DemandLotSelectionScreenState
                               OutlinedButton(
                                 onPressed:
                                     _fetchFarmerMatchingLots,
-                                child: const Text('Retry'),
+                                child: Text(context.tr('common_retry')),
                               ),
                             ],
                           ),
@@ -335,7 +338,7 @@ class _DemandLotSelectionScreenState
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
-                                  'No matching active lots found',
+                                  context.tr('no_matching_active_lots'),
                                   style: theme
                                       .textTheme.titleSmall
                                       ?.copyWith(
@@ -344,7 +347,7 @@ class _DemandLotSelectionScreenState
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  'You need an active lot of ${widget.crop} with available quantity to respond to this buyer demand.',
+                                  context.trWithArgs('need_active_lot_desc', {'crop': widget.crop}),
                                   textAlign: TextAlign.center,
                                   style: theme
                                       .textTheme.bodySmall
@@ -448,7 +451,7 @@ class _DemandLotSelectionScreenState
                                               ),
                                             ),
                                             Text(
-                                              'Lot ID: $shortId',
+                                              context.trWithArgs('lot_id_format', {'id': shortId}),
                                               style: theme.textTheme
                                                   .bodySmall
                                                   ?.copyWith(
@@ -547,8 +550,7 @@ class _DemandLotSelectionScreenState
                   onPressed: _selectedLot == null
                       ? null
                       : _continueToOffer,
-                  child: const Text(
-                    'Continue to Make Offer',
+                  child: Text(context.tr('continue_to_make_offer'),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

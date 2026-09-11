@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 
 class MyPurchasesScreen extends StatelessWidget {
   const MyPurchasesScreen({super.key});
@@ -10,7 +12,11 @@ class MyPurchasesScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Purchases'),
+        title: Text(context.tr('my_purchases_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: ListView(
@@ -23,13 +29,13 @@ class MyPurchasesScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Active & Past Purchases',
+                    context.tr('active_past_purchases'),
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    '3 orders',
+                    context.trWithArgs('orders_count', {'count': '3'}),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: AppColors.onSurfaceVariant,
                     ),
@@ -40,17 +46,17 @@ class MyPurchasesScreen extends StatelessWidget {
             const SizedBox(height: 8),
 
             // Purchase 1: In Transit
-            const Card(
+            Card(
               child: ListTile(
                 title: Text(
-                  'Wheat — 100 qtl',
+                  '${context.tr("crop_wheat")} — 100 qtl',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  'Farmer Location: Meerut\nAgreed Price: ₹2,450/qtl\nTotal Value: ₹2,45,000',
+                  context.tr('purchase_sub_1'),
                 ),
                 trailing: Text(
-                  'In Transit',
+                  context.tr('status_in_transit'),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
@@ -62,17 +68,17 @@ class MyPurchasesScreen extends StatelessWidget {
             const SizedBox(height: 8),
 
             // Purchase 2: Delivered
-            const Card(
+            Card(
               child: ListTile(
                 title: Text(
-                  'Wheat — 150 qtl',
+                  '${context.tr("crop_wheat")} — 150 qtl',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  'Farmer Location: Muzaffarnagar\nAgreed Price: ₹2,460/qtl\nTotal Value: ₹3,69,000',
+                  context.tr('purchase_sub_2'),
                 ),
                 trailing: Text(
-                  'Delivered',
+                  context.tr('status_delivered'),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: AppColors.success,
@@ -84,17 +90,17 @@ class MyPurchasesScreen extends StatelessWidget {
             const SizedBox(height: 8),
 
             // Purchase 3: Payment Pending
-            const Card(
+            Card(
               child: ListTile(
                 title: Text(
-                  'Rice — 80 qtl',
+                  '${context.tr("crop_rice")} — 80 qtl',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  'Farmer Location: Hapur\nAgreed Price: ₹3,050/qtl\nTotal Value: ₹2,44,000',
+                  context.tr('purchase_sub_3'),
                 ),
                 trailing: Text(
-                  'Payment Pending',
+                  context.tr('status_payment_pending'),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: AppColors.warning,

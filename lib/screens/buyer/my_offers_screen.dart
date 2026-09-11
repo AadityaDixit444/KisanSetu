@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/offer_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'offer_details_screen.dart';
 
 class MyOffersScreen extends StatefulWidget {
@@ -146,7 +148,11 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Submitted Offers'),
+        title: Text(context.tr('my_submitted_offers')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -171,7 +177,7 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
                               const SizedBox(height: 12),
                               OutlinedButton(
                                 onPressed: _fetchOffers,
-                                child: const Text('Retry'),
+                                child: Text(context.tr('common_retry')),
                               ),
                             ],
                           ),
@@ -193,14 +199,14 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
-                                    'No offers submitted yet',
+                                    context.tr('no_offers_submitted_yet'),
                                     style: theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Browse available lots to make bids and negotiate with farmers.',
+                                    context.tr('browse_lots_to_bid_desc'),
                                     textAlign: TextAlign.center,
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: AppColors.onSurfaceVariant,
@@ -307,7 +313,7 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                'Asking: $askingPrice',
+                                                context.trWithArgs('asking_price_format', {'price': askingPrice}),
                                                 style: theme.textTheme.bodySmall?.copyWith(
                                                   color: AppColors.onSurfaceVariant,
                                                 ),
@@ -316,7 +322,7 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
                                               Row(
                                                 children: [
                                                   Text(
-                                                    'Your Offer: ',
+                                                    context.tr('your_offer_label'),
                                                     style: theme.textTheme.bodyMedium?.copyWith(
                                                       fontSize: 13,
                                                     ),
@@ -337,7 +343,7 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
                                             crossAxisAlignment: CrossAxisAlignment.end,
                                             children: [
                                               Text(
-                                                'Total Value',
+                                                context.tr('total_value_label'),
                                                 style: theme.textTheme.bodySmall?.copyWith(
                                                   color: AppColors.onSurfaceVariant,
                                                 ),

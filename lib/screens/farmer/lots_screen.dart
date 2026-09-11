@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/lot_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'buyer_offers_screen.dart';
 import 'create_lot_screen.dart';
 import 'simulator_screen.dart';
@@ -105,14 +107,15 @@ class _LotsScreenState extends State<LotsScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Back',
+          tooltip: context.tr('common_back'),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('My Produce Lots'),
+        title: Text(context.tr('my_produce_lots_title')),
         actions: [
+          const Center(child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh',
+            tooltip: context.tr('refresh_tooltip'),
             onPressed: _fetchLots,
           ),
         ],
@@ -120,7 +123,7 @@ class _LotsScreenState extends State<LotsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _navigateToCreateLot(context),
         icon: const Icon(Icons.add),
-        label: const Text('Post New Lot'),
+        label: Text(context.tr('post_new_lot_btn')),
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -139,7 +142,7 @@ class _LotsScreenState extends State<LotsScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Active Inventory',
+                            context.tr('active_inventory'),
                             style: theme.textTheme.titleMedium?.copyWith(
                               color: AppColors.onSurfaceVariant,
                             ),
@@ -151,7 +154,7 @@ class _LotsScreenState extends State<LotsScreen> {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              '${_lots.length} Listed Lots',
+                              context.trWithArgs('listed_lots_count', {'count': '${_lots.length}'}),
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -163,14 +166,14 @@ class _LotsScreenState extends State<LotsScreen> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'Manage Produce Batches',
+                        context.tr('manage_produce_batches'),
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Track real-time lot availability, status, and evaluate market holding returns.',
+                        context.tr('track_realtime_lots_desc'),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: AppColors.onSurfaceVariant,
                         ),
@@ -186,7 +189,7 @@ class _LotsScreenState extends State<LotsScreen> {
                           );
                         },
                         icon: const Icon(Icons.calculate_outlined, size: 18),
-                        label: const Text('Run What-If Price Simulator'),
+                        label: Text(context.tr('run_what_if_simulator')),
                       ),
                     ],
                   ),
@@ -198,7 +201,7 @@ class _LotsScreenState extends State<LotsScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'Harvested Produce Lots',
+                  context.tr('harvested_produce_lots'),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -227,7 +230,7 @@ class _LotsScreenState extends State<LotsScreen> {
                         const SizedBox(height: 12),
                         OutlinedButton(
                           onPressed: _fetchLots,
-                          child: const Text('Retry'),
+                          child: Text(context.tr('common_retry')),
                         ),
                       ],
                     ),
@@ -248,14 +251,14 @@ class _LotsScreenState extends State<LotsScreen> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'No Produce Lots Found',
+                            context.tr('no_produce_lots_found'),
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Post your harvested crops to broadcast available volume and receive buyer offers.',
+                            context.tr('post_crops_broadcast_desc'),
                             textAlign: TextAlign.center,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: AppColors.onSurfaceVariant,
@@ -265,7 +268,7 @@ class _LotsScreenState extends State<LotsScreen> {
                           ElevatedButton.icon(
                             onPressed: () => _navigateToCreateLot(context),
                             icon: const Icon(Icons.add),
-                            label: const Text('Post Produce Lot'),
+                            label: Text(context.tr('post_produce_lot_btn')),
                           ),
                         ],
                       ),
@@ -388,7 +391,7 @@ class _LotsScreenState extends State<LotsScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Available Volume',
+                                  context.tr('available_volume'),
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: AppColors.onSurfaceVariant,
                                   ),
@@ -406,7 +409,7 @@ class _LotsScreenState extends State<LotsScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Quality Grade',
+                                  context.tr('quality_grade'),
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: AppColors.onSurfaceVariant,
                                   ),
@@ -424,7 +427,7 @@ class _LotsScreenState extends State<LotsScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Asking Rate',
+                                  context.tr('asking_rate'),
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: AppColors.onSurfaceVariant,
                                   ),
@@ -451,7 +454,7 @@ class _LotsScreenState extends State<LotsScreen> {
                                   );
                                 },
                                 icon: const Icon(Icons.analytics_outlined, size: 16),
-                                label: const Text('Test What-If / Simulate Return'),
+                                label: Text(context.tr('test_what_if_return')),
                               ),
                             ),
                           ],

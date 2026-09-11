@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/market_price_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'simulator_screen.dart';
 
 class RecommendationScreen extends StatefulWidget {
@@ -122,14 +124,15 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Back',
+          tooltip: context.tr('common_back'),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Market Advisory'),
+        title: Text(context.tr('market_advisory_title')),
         actions: [
+          const Center(child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh',
+            tooltip: context.tr('refresh_tooltip'),
             onPressed: _fetchRecommendationData,
           ),
         ],
@@ -157,7 +160,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                               const SizedBox(height: 12),
                               OutlinedButton(
                                 onPressed: _fetchRecommendationData,
-                                child: const Text('Retry'),
+                                child: Text(context.tr('common_retry')),
                               ),
                             ],
                           ),
@@ -179,14 +182,14 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
-                                    'No market data found for Wheat',
+                                    context.tr('no_market_data_wheat'),
                                     style: theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Recommendation requires live Mandi records for Wheat at Meerut Mandi.',
+                                    context.tr('rec_requires_live_mandi'),
                                     textAlign: TextAlign.center,
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: AppColors.onSurfaceVariant,
@@ -231,7 +234,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Wheat • $market',
+                      '${context.tr("crop_wheat")} • $market',
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: AppColors.onSurfaceVariant,
                       ),
@@ -278,7 +281,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'Underlying Market Factors',
+            context.tr('underlying_market_factors'),
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -357,14 +360,14 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Price Realisation Simulator',
+                          context.tr('price_realisation_simulator'),
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Model net returns for selling now vs. holding with storage and freight deductions.',
+                          context.tr('model_net_returns_desc'),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: AppColors.onSurfaceVariant,
                           ),

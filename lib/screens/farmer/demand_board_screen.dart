@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/demand_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'demand_lot_selection_screen.dart';
 
 class DemandBoardScreen extends StatefulWidget {
@@ -85,11 +87,12 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Buyer Demand Board'),
+        title: Text(context.tr('buyer_demand_board_title')),
         actions: [
+          const Center(child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh demands',
+            tooltip: context.tr('refresh_demands'),
             onPressed: _fetchActiveDemands,
           ),
         ],
@@ -117,7 +120,7 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
                               const SizedBox(height: 12),
                               OutlinedButton(
                                 onPressed: _fetchActiveDemands,
-                                child: const Text('Retry'),
+                                child: Text(context.tr('common_retry')),
                               ),
                             ],
                           ),
@@ -139,14 +142,14 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
-                                    'No active buyer demands',
+                                    context.tr('no_active_buyer_demands'),
                                     style: theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Direct purchase requirements posted by institutional buyers will appear here.',
+                                    context.tr('direct_purchase_reqs_desc'),
                                     textAlign: TextAlign.center,
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: AppColors.onSurfaceVariant,
@@ -265,7 +268,7 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
                                             );
                                           },
                                           child: const Text(
-                                            'Respond to Demand',
+                                            context.tr('respond_to_demand_btn'),
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 14,

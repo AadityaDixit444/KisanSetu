@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/market_price_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 
 class SimulatorScreen extends StatefulWidget {
   const SimulatorScreen({super.key});
@@ -180,14 +182,15 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Back',
+          tooltip: context.tr('common_back'),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('What-If Price Simulator'),
+        title: Text(context.tr('what_if_simulator_title')),
         actions: [
+          const Center(child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh',
+            tooltip: context.tr('refresh_tooltip'),
             onPressed: _fetchMarketBaseline,
           ),
         ],
@@ -210,7 +213,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Market Assumptions',
+                            context.tr('market_assumptions'),
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -251,7 +254,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Harvest Lot Volume (Quintals)',
+                        context.tr('harvest_lot_volume_qtl'),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -262,7 +265,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                         keyboardType:
                             const TextInputType.numberWithOptions(decimal: true),
                         decoration: const InputDecoration(
-                          hintText: 'Enter quantity in quintals',
+                          hintText: context.tr('enter_quantity_in_qtl'),
                           suffixText: 'qtl',
                           prefixIcon: Icon(Icons.scale_rounded),
                         ),
@@ -293,7 +296,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Estimated Prototype Costs',
+                            context.tr('estimated_prototype_costs'),
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -307,7 +310,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                       ),
                       const Divider(height: 18, color: AppColors.outlineVariant),
                       Text(
-                        '• Transport: ₹2,500 flat per haulage\n• Storage (Hold 7d): ₹100/quintal\n• Storage (Hold 15d): ₹200/quintal',
+                        context.tr('costs_breakdown_text'),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: AppColors.onSurfaceVariant,
                           height: 1.4,
@@ -323,7 +326,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'Scenario Comparison',
+                  context.tr('scenario_comparison'),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -333,7 +336,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'Scenario estimate based on current market trend',
+                  context.tr('scenario_estimate_trend'),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: AppColors.onSurfaceVariant,
                   ),
@@ -362,7 +365,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                         const SizedBox(height: 12),
                         OutlinedButton(
                           onPressed: _fetchMarketBaseline,
-                          child: const Text('Retry'),
+                          child: Text(context.tr('common_retry')),
                         ),
                       ],
                     ),
@@ -383,14 +386,14 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'No market data found for Wheat',
+                            context.tr('no_market_data_wheat'),
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Simulation requires live mandi rates. Please ensure Wheat rates are recorded in the database.',
+                            context.tr('simulation_requires_rates'),
                             textAlign: TextAlign.center,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: AppColors.onSurfaceVariant,
@@ -421,7 +424,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Best Scenario: $bestScenarioTitle',
+                                context.trWithArgs('best_scenario_prefix', {'scenario': bestScenarioTitle}),
                                 style: theme.textTheme.titleSmall?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.primary,
@@ -429,7 +432,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Yields the highest estimated net realisable value for $_stockQuantity qtl.',
+                                context.trWithArgs('yields_highest_nrv', {'qty': '$_stockQuantity'}),
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: AppColors.onSurfaceVariant,
                                 ),
@@ -500,7 +503,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Current Market Recommendation',
+                              context.tr('current_market_recommendation'),
                               style: theme.textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -532,7 +535,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Based on live price trend ($_priceChangePercent%) and demand level ($_demandLevel).',
+                          context.trWithArgs('based_on_live_trend', {'trend': '$_priceChangePercent', 'demand': _demandLevel}),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: AppColors.onSurfaceVariant,
                           ),
@@ -700,7 +703,7 @@ class _ScenarioCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Net Realisable Value',
+                  context.tr('net_realisable_value'),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../services/logistics_service.dart';
 import '../../services/transaction_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'transport_options_screen.dart';
 
 class LogisticsScreen extends StatefulWidget {
@@ -111,7 +113,11 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Logistics & Fulfillment'),
+        title: Text(context.tr('logistics_fulfillment_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -136,7 +142,7 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
                               const SizedBox(height: 12),
                               OutlinedButton(
                                 onPressed: _fetchData,
-                                child: const Text('Retry'),
+                                child: Text(context.tr('common_retry')),
                               ),
                             ],
                           ),
@@ -158,14 +164,14 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
-                                    'No confirmed deals found',
+                                    context.tr('no_confirmed_deals'),
                                     style: theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Logistics tracking and dispatch arrangement will appear once an offer is accepted.',
+                                    context.tr('logistics_tracking_desc'),
                                     textAlign: TextAlign.center,
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: AppColors.onSurfaceVariant,
@@ -213,7 +219,7 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
                                     Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                                       child: Text(
-                                        'Deal #${index + 1} • $crop ($quantity)',
+                                        context.trWithArgs('deal_number_header', {'number': '${index + 1}', 'crop': crop, 'qty': quantity}),
                                         style: theme.textTheme.titleSmall?.copyWith(
                                           fontWeight: FontWeight.bold,
                                           color: AppColors.onSurfaceVariant,
@@ -267,7 +273,7 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            'Quantity: $quantity • Quality: $quality',
+                                            context.trWithArgs('qty_quality_summary', {'qty': quantity, 'quality': quality}),
                                             style: theme.textTheme.bodyMedium?.copyWith(
                                               color: AppColors.onSurfaceVariant,
                                             ),
@@ -318,7 +324,7 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'Transit Route',
+                                            context.tr('transit_route'),
                                             style: theme.textTheme.titleMedium?.copyWith(
                                               fontWeight: FontWeight.bold,
                                             ),
@@ -366,7 +372,7 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'Delivery Progress',
+                                            context.tr('delivery_progress'),
                                             style: theme.textTheme.titleMedium?.copyWith(
                                               fontWeight: FontWeight.bold,
                                             ),

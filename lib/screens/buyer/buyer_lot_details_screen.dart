@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'make_offer_screen.dart';
 
 class BuyerLotDetailsScreen extends StatelessWidget {
@@ -43,7 +45,11 @@ class BuyerLotDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lot Details'),
+        title: Text(context.tr('lot_details_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -80,8 +86,8 @@ class BuyerLotDetailsScreen extends StatelessWidget {
                                   color: AppColors.primaryContainer,
                                   borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: const Text(
-                                  'ACTIVE',
+                                child: Text(
+                                  context.tr('status_active'),
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
@@ -97,19 +103,19 @@ class BuyerLotDetailsScreen extends StatelessWidget {
                           ),
                           _DetailRow(
                             icon: Icons.tag_rounded,
-                            label: 'Lot ID',
+                            label: context.tr('lot_id_label'),
                             value: lotId,
                           ),
                           const SizedBox(height: 12),
                           _DetailRow(
                             icon: Icons.scale_rounded,
-                            label: 'Available Quantity',
+                            label: context.tr('available_quantity'),
                             value: quantity,
                           ),
                           const SizedBox(height: 12),
                           _DetailRow(
                             icon: Icons.currency_rupee_rounded,
-                            label: 'Asking Price',
+                            label: context.tr('asking_price'),
                             value: askingPrice,
                             isBold: true,
                             valueColor: AppColors.primary,
@@ -117,19 +123,19 @@ class BuyerLotDetailsScreen extends StatelessWidget {
                           const SizedBox(height: 12),
                           _DetailRow(
                             icon: Icons.verified_outlined,
-                            label: 'Quality Grade',
+                            label: context.tr('quality_grade'),
                             value: quality,
                           ),
                           const SizedBox(height: 12),
                           _DetailRow(
                             icon: Icons.location_on_outlined,
-                            label: 'Produce Location',
+                            label: context.tr('produce_location'),
                             value: location,
                           ),
                           const SizedBox(height: 12),
                           _DetailRow(
                             icon: Icons.route_rounded,
-                            label: 'Distance',
+                            label: context.tr('lot_distance'),
                             value: distance?.toString() ?? '',
                           ),
                         ],
@@ -154,8 +160,8 @@ class BuyerLotDetailsScreen extends StatelessWidget {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: navigateToMakeOffer,
-                  child: const Text(
-                    'Make an Offer',
+                  child: Text(
+                    context.tr('make_an_offer'),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/offer_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'offer_submitted_screen.dart';
 
 class OfferReviewScreen extends StatefulWidget {
@@ -52,7 +54,7 @@ class _OfferReviewScreenState extends State<OfferReviewScreen> {
 
     if (parsedPrice <= 0 || parsedQty <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid offer price or quantity.')),
+        SnackBar(content: Text(context.tr('err_invalid_price_or_qty'))),
       );
       return;
     }
@@ -110,7 +112,11 @@ class _OfferReviewScreenState extends State<OfferReviewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Review Offer'),
+        title: Text(context.tr('review_offer_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -140,8 +146,7 @@ class _OfferReviewScreenState extends State<OfferReviewScreen> {
                                   color: AppColors.secondaryContainer,
                                   borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: const Text(
-                                  'Ready to Submit',
+                                child: Text(context.tr('badge_ready_to_submit'),
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
@@ -153,29 +158,29 @@ class _OfferReviewScreenState extends State<OfferReviewScreen> {
                           ),
                           const Divider(height: 24, color: AppColors.outlineVariant),
                           _DetailRow(
-                            label: 'Offered Unit Price',
+                            label: context.tr('offered_unit_price'),
                             value: '₹${widget.offerPrice}/qtl',
                             isBold: true,
                             valueColor: AppColors.primary,
                           ),
                           const SizedBox(height: 10),
                           _DetailRow(
-                            label: 'Offered Volume',
+                            label: context.tr('offered_volume'),
                             value: '${widget.quantity} qtl',
                           ),
                           const SizedBox(height: 10),
                           _DetailRow(
-                            label: 'Farmer Asking Price',
+                            label: context.tr('farmer_asking_price'),
                             value: '₹${widget.askingPrice}/qtl',
                           ),
                           const SizedBox(height: 10),
                           _DetailRow(
-                            label: 'Produce Location',
+                            label: context.tr('produce_location'),
                             value: widget.location,
                           ),
                           const Divider(height: 24, color: AppColors.outlineVariant),
                           _DetailRow(
-                            label: 'Total Contract Value',
+                            label: context.tr('total_contract_value'),
                             value: _formatCurrency(totalAmount),
                             isBold: true,
                             fontSize: 16,
@@ -210,8 +215,7 @@ class _OfferReviewScreenState extends State<OfferReviewScreen> {
                             color: AppColors.onPrimary,
                           ),
                         )
-                      : const Text(
-                          'Confirm & Submit Offer',
+                      : Text(context.tr('confirm_and_submit_offer'),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

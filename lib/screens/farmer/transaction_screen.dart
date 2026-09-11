@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/transaction_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'logistics_screen.dart';
 import 'payment_details_screen.dart';
 
@@ -164,14 +166,15 @@ class _TransactionScreenState extends State<TransactionScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Back',
+          tooltip: context.tr('common_back'),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Transactions & Dispatches'),
+        title: Text(context.tr('transactions_dispatches_title')),
         actions: [
+          const Center(child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh',
+            tooltip: context.tr('refresh_tooltip'),
             onPressed: _fetchTransactions,
           ),
         ],
@@ -199,7 +202,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                               const SizedBox(height: 12),
                               OutlinedButton(
                                 onPressed: _fetchTransactions,
-                                child: const Text('Retry'),
+                                child: Text(context.tr('common_retry')),
                               ),
                             ],
                           ),
@@ -222,14 +225,14 @@ class _TransactionScreenState extends State<TransactionScreen> {
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    'No Transactions Found',
+                                    context.tr('no_transactions_found'),
                                     style: theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
-                                    'When buyer offers are accepted, deal contracts, escrow status, and dispatches will appear here.',
+                                    context.tr('transactions_appear_here_desc'),
                                     textAlign: TextAlign.center,
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: AppColors.onSurfaceVariant,
@@ -322,8 +325,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                                       valueColor: AppColors.primary,
                                     ),
                                     const SizedBox(height: 20),
-                                    Text(
-                                      'Fulfillment Timeline',
+                                    Text(context.tr('fulfillment_timeline'),
                                       style: theme.textTheme.titleSmall?.copyWith(
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -365,7 +367,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                                                 ),
                                               );
                                             },
-                                            child: const Text('Escrow Details'),
+                                            child: Text(context.tr('escrow_details')),
                                           ),
                                         ),
                                         const SizedBox(width: 12),
@@ -379,7 +381,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                                                 ),
                                               );
                                             },
-                                            child: const Text('Logistics'),
+                                            child: Text(context.tr('logistics_label')),
                                           ),
                                         ),
                                       ],

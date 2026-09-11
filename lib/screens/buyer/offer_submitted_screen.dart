@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'buyer_dashboard.dart';
 import 'my_offers_screen.dart';
 
@@ -43,6 +45,12 @@ class OfferSubmittedScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: const [
+                    LanguageToggleButton(isLightSurface: true),
+                  ],
+                ),
                 const Spacer(),
                 Container(
                   width: 90,
@@ -59,7 +67,7 @@ class OfferSubmittedScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Offer Submitted!',
+                  context.tr('offer_submitted_title'),
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -68,7 +76,7 @@ class OfferSubmittedScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Your bid has been directly delivered to the farmer. You will be notified once they respond.',
+                  context.tr('offer_submitted_desc'),
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: AppColors.onSurfaceVariant,
@@ -92,7 +100,7 @@ class OfferSubmittedScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              'Lot ID: $lotId',
+                              context.trWithArgs('lot_id_prefix', {'id': lotId}),
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: AppColors.onSurfaceVariant,
                                 fontWeight: FontWeight.w600,
@@ -102,17 +110,17 @@ class OfferSubmittedScreen extends StatelessWidget {
                         ),
                         const Divider(height: 24, color: AppColors.outlineVariant),
                         _SummaryRow(
-                          label: 'Quantity',
+                          label: context.tr('lot_quantity'),
                           value: quantity.contains('qtl') ? quantity : '$quantity qtl',
                         ),
                         const SizedBox(height: 8),
                         _SummaryRow(
-                          label: 'Offered Price',
+                          label: context.tr('offered_price_label'),
                           value: offerPrice.contains('/qtl') ? offerPrice : '₹$offerPrice/qtl',
                         ),
                         const SizedBox(height: 8),
                         _SummaryRow(
-                          label: 'Mandi / Location',
+                          label: context.tr('mandi_location_label'),
                           value: location,
                         ),
                       ],
@@ -127,7 +135,7 @@ class OfferSubmittedScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (context) => const MyOffersScreen()),
                     );
                   },
-                  child: const Text('View My Offers'),
+                  child: Text(context.tr('view_my_offers_btn')),
                 ),
                 const SizedBox(height: 12),
                 OutlinedButton(
@@ -138,7 +146,7 @@ class OfferSubmittedScreen extends StatelessWidget {
                       (route) => false,
                     );
                   },
-                  child: const Text('Back to Dashboard'),
+                  child: Text(context.tr('back_to_dashboard_btn')),
                 ),
                 const SizedBox(height: 12),
               ],

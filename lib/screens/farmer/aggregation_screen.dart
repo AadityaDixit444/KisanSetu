@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 
 class AggregationScreen extends StatefulWidget {
   const AggregationScreen({super.key});
@@ -58,7 +60,7 @@ class _AggregationScreenState extends State<AggregationScreen> {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Aggregated lot created successfully'),
+        content: Text(context.tr('msg_aggregated_lot_success')),
         duration: Duration(seconds: 2),
       ),
     );
@@ -70,7 +72,11 @@ class _AggregationScreenState extends State<AggregationScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Smart Aggregation'),
+        title: Text(context.tr('smart_aggregation_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: ListView(
@@ -111,8 +117,8 @@ class _AggregationScreenState extends State<AggregationScreen> {
                             color: AppColors.primaryContainer,
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Text(
-                            'Crop Pooling',
+                          child: Text(
+                            context.tr('crop_pooling'),
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -124,14 +130,14 @@ class _AggregationScreenState extends State<AggregationScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Wheat',
+                      context.tr('crop_wheat'),
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Combine produce with verified farmers nearby to create larger trade lots, attract tier-1 bulk buyers, and negotiate stronger mandi rates.',
+                      context.tr('aggregation_hero_desc'),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         height: 1.45,
                       ),
@@ -148,13 +154,13 @@ class _AggregationScreenState extends State<AggregationScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Nearby Farmers',
+                    context.tr('nearby_farmers'),
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    '${_nearbyFarmers.where((f) => f.isSelected).length} selected',
+                    context.trWithArgs('selected_count', {'count': '${_nearbyFarmers.where((f) => f.isSelected).length}'}),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w600,
@@ -286,7 +292,7 @@ class _AggregationScreenState extends State<AggregationScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Combined Lot',
+                          context.tr('combined_lot_label'),
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -330,7 +336,7 @@ class _AggregationScreenState extends State<AggregationScreen> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'Bulk Selling Advantage',
+                          context.tr('bulk_selling_advantage'),
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: AppColors.onSecondaryContainer,
@@ -340,7 +346,7 @@ class _AggregationScreenState extends State<AggregationScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Larger lots can attract bulk buyers and improve bargaining power.',
+                      context.tr('bulk_advantage_desc'),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: AppColors.onSecondaryContainer,
                         height: 1.4,
@@ -368,7 +374,7 @@ class _AggregationScreenState extends State<AggregationScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.hub_rounded),
-                label: const Text('Create Aggregated Lot'),
+                label: Text(context.tr('create_aggregated_lot_btn')),
                 onPressed: _onCreateLotPressed,
               ),
             ),

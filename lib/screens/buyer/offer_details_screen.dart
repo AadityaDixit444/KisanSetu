@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 
 class OfferDetailsScreen extends StatelessWidget {
   final String crop;
@@ -27,7 +29,11 @@ class OfferDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Offer Details'),
+        title: Text(context.tr('offer_details_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: ListView(
@@ -78,21 +84,21 @@ class OfferDetailsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Offer Summary',
+                      context.tr('offer_summary'),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const Divider(height: 24, color: AppColors.outlineVariant),
-                    _buildDetailRow('Quantity', quantity),
+                    _buildDetailRow(context.tr('lot_quantity'), quantity),
                     const SizedBox(height: 10),
-                    _buildDetailRow('Asking Price', askingPrice),
+                    _buildDetailRow(context.tr('asking_price'), askingPrice),
                     const SizedBox(height: 10),
-                    _buildDetailRow('Your Offer', yourOffer, isHighlighted: true),
+                    _buildDetailRow(context.tr('your_offer_label'), yourOffer, isHighlighted: true),
                     const SizedBox(height: 10),
-                    _buildDetailRow('Total Offer Value', totalValue, isBold: true),
+                    _buildDetailRow(context.tr('total_offer_value'), totalValue, isBold: true),
                     const SizedBox(height: 10),
-                    _buildDetailRow('Status', status),
+                    _buildDetailRow(context.tr('status_label'), status),
                   ],
                 ),
               ),
@@ -107,28 +113,28 @@ class OfferDetailsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Offer Progress',
+                      context.tr('offer_progress'),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const _ProgressStep(
+                    _ProgressStep(
                       step: '1',
-                      title: 'Offer Submitted',
-                      status: 'Completed',
+                      title: context.tr('step_offer_submitted'),
+                      status: context.tr('status_completed'),
                       isCompleted: true,
                     ),
-                    const _ProgressStep(
+                    _ProgressStep(
                       step: '2',
-                      title: 'Farmer Review',
-                      status: 'Pending',
+                      title: context.tr('step_farmer_review'),
+                      status: context.tr('status_pending'),
                       isCompleted: false,
                     ),
-                    const _ProgressStep(
+                    _ProgressStep(
                       step: '3',
-                      title: 'Deal Confirmation',
-                      status: 'Pending',
+                      title: context.tr('step_deal_confirmation'),
+                      status: context.tr('status_pending'),
                       isCompleted: false,
                       isLast: true,
                     ),
@@ -173,7 +179,7 @@ class _ProgressStep extends StatelessWidget {
   final bool isCompleted;
   final bool isLast;
 
-  const _ProgressStep({
+  _ProgressStep({
     required this.step,
     required this.title,
     required this.status,

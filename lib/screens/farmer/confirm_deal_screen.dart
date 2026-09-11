@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'logistics_screen.dart';
 
 class ConfirmDealScreen extends StatelessWidget {
@@ -20,7 +22,11 @@ class ConfirmDealScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Confirm Deal'),
+        title: Text(context.tr('confirm_deal_btn')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: ListView(
@@ -33,7 +39,7 @@ class ConfirmDealScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Review Your Deal',
+                    context.tr('review_your_deal_title'),
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -41,7 +47,7 @@ class ConfirmDealScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Verify deal terms and counterparty details before finalizing',
+                    context.tr('verify_deal_subtitle'),
                     style: theme.textTheme.bodyMedium,
                   ),
                 ],
@@ -123,7 +129,7 @@ class ConfirmDealScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Deal Specifications',
+                          context.tr('deal_specifications'),
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -138,7 +144,7 @@ class ConfirmDealScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: const Text(
-                            'Wheat • 100 qtl',
+                            '${context.tr("crop_wheat")} • 100 qtl',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -185,7 +191,7 @@ class ConfirmDealScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: const [
                           Text(
-                            'Estimated Total Value',
+                            context.tr('estimated_total_value'),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
@@ -225,7 +231,7 @@ class ConfirmDealScreen extends StatelessWidget {
                         ),
                         SizedBox(width: 8),
                         Text(
-                          'What happens next?',
+                          context.tr('what_happens_next'),
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -235,13 +241,13 @@ class ConfirmDealScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    const _NextStepItem(step: '1', text: 'Buyer confirms the order'),
+                    _NextStepItem(step: '1', text: 'Buyer confirms the order'),
                     const SizedBox(height: 8),
-                    const _NextStepItem(step: '2', text: 'Logistics are arranged'),
+                    _NextStepItem(step: '2', text: 'Logistics are arranged'),
                     const SizedBox(height: 8),
-                    const _NextStepItem(step: '3', text: 'Delivery is completed'),
+                    _NextStepItem(step: '3', text: 'Delivery is completed'),
                     const SizedBox(height: 8),
-                    const _NextStepItem(
+                    _NextStepItem(
                       step: '4',
                       text: 'Payment is tracked through KisanSetu',
                     ),
@@ -257,7 +263,7 @@ class ConfirmDealScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.handshake_rounded),
-                label: const Text('Confirm Deal'),
+                label: Text(context.tr('confirm_deal_btn')),
                 onPressed: () => _onConfirmDeal(context),
               ),
             ),
@@ -317,7 +323,7 @@ class _NextStepItem extends StatelessWidget {
   final String step;
   final String text;
 
-  const _NextStepItem({
+  _NextStepItem({
     required this.step,
     required this.text,
   });

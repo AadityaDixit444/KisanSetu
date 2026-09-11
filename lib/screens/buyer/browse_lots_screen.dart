@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/lot_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
+import '../../widgets/language_toggle_button.dart';
 import 'buyer_lot_details_screen.dart';
 
 class BrowseLotsScreen extends StatefulWidget {
@@ -99,7 +101,11 @@ class _BrowseLotsScreenState extends State<BrowseLotsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Browse Lots'),
+        title: Text(context.tr('browse_lots_title')),
+        actions: const [
+          Center(child: LanguageToggleButton(isLightSurface: false)),
+          SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -111,7 +117,7 @@ class _BrowseLotsScreenState extends State<BrowseLotsScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: TextField(
                   decoration: InputDecoration(
-                    hintText: 'Search produce or mandi location...',
+                    hintText: context.tr('search_produce_location'),
                     prefixIcon: const Icon(Icons.search_rounded),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -125,16 +131,24 @@ class _BrowseLotsScreenState extends State<BrowseLotsScreen> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
-                  children: ['All', 'Wheat', 'Rice', 'Maize', 'Mustard'].map((crop) {
-                    final isSelected = _selectedCrop == crop;
+                  children: [
+                    {'key': 'All', 'label': context.tr('crop_all')},
+                    {'key': 'Wheat', 'label': context.tr('crop_wheat')},
+                    {'key': 'Rice', 'label': context.tr('crop_rice')},
+                    {'key': 'Maize', 'label': context.tr('crop_maize')},
+                    {'key': 'Mustard', 'label': context.tr('crop_mustard')},
+                  ].map((item) {
+                    final cropKey = item['key']!;
+                    final cropLabel = item['label']!;
+                    final isSelected = _selectedCrop == cropKey;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: FilterChip(
                         selected: isSelected,
-                        label: Text(crop),
+                        label: Text(cropLabel),
                         onSelected: (selected) {
                           setState(() {
-                            _selectedCrop = crop;
+                            _selectedCrop = cropKey;
                           });
                         },
                       ),
@@ -149,14 +163,14 @@ class _BrowseLotsScreenState extends State<BrowseLotsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Available Lots',
+                      context.tr('available_lots'),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     if (!_isLoading && _errorMessage == null)
                       Text(
-                        '${_filteredLots.length} listings',
+                        context.trWithArgs('listings_count', {'count': '${_filteredLots.length}'}),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: AppColors.onSurfaceVariant,
                         ),
@@ -185,7 +199,7 @@ class _BrowseLotsScreenState extends State<BrowseLotsScreen> {
                       const SizedBox(height: 12),
                       OutlinedButton(
                         onPressed: _fetchLots,
-                        child: const Text('Retry'),
+                        child: Text(context.tr('common_retry')),
                       ),
                     ],
                   ),
@@ -195,7 +209,7 @@ class _BrowseLotsScreenState extends State<BrowseLotsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
                   child: Center(
                     child: Text(
-                      'No active lots available',
+                      context.tr('no_active_lots'),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: AppColors.onSurfaceVariant,
                       ),
@@ -277,7 +291,7 @@ class _BrowseLotsScreenState extends State<BrowseLotsScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Quantity',
+                                      context.tr('lot_quantity'),
                                       style: theme.textTheme.bodyMedium?.copyWith(fontSize: 11),
                                     ),
                                     const SizedBox(height: 2),
@@ -294,7 +308,7 @@ class _BrowseLotsScreenState extends State<BrowseLotsScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Quality',
+                                      context.tr('lot_quality'),
                                       style: theme.textTheme.bodyMedium?.copyWith(fontSize: 11),
                                     ),
                                     const SizedBox(height: 2),
@@ -311,7 +325,7 @@ class _BrowseLotsScreenState extends State<BrowseLotsScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                      'Location',
+                                      context.tr('lot_location'),
                                       style: theme.textTheme.bodyMedium?.copyWith(fontSize: 11),
                                     ),
                                     const SizedBox(height: 2),
@@ -334,7 +348,7 @@ class _BrowseLotsScreenState extends State<BrowseLotsScreen> {
                             height: 38,
                             child: ElevatedButton(
                               onPressed: () => _navigateToLotDetails(lot),
-                              child: const Text('Make Offer / View Lot'),
+                              child: Text(context.tr('make_offer_view_lot')),
                             ),
                           ),
                         ],
