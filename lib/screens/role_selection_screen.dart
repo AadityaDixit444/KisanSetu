@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../localization/language_scope.dart';
 import '../theme/app_colors.dart';
+import '../widgets/language_toggle_button.dart';
 import 'buyer/buyer_dashboard.dart';
 import 'farmer_dashboard.dart';
 
@@ -31,10 +33,17 @@ class RoleSelectionScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Global Language Toggle at top right
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: const [
+                  LanguageToggleButton(isLightSurface: true),
+                ],
+              ),
               const Spacer(),
               // App Branding
               Center(
@@ -54,7 +63,7 @@ class RoleSelectionScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'KisanSetu',
+                      context.tr('app_name'),
                       style: theme.textTheme.headlineLarge?.copyWith(
                         fontWeight: FontWeight.w800,
                         color: AppColors.primary,
@@ -62,7 +71,7 @@ class RoleSelectionScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Connecting Farmers & Verified Bulk Buyers',
+                      context.tr('app_tagline'),
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: AppColors.onSurfaceVariant,
@@ -73,7 +82,7 @@ class RoleSelectionScreen extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                'Select your role to continue',
+                context.tr('select_role_title'),
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -112,14 +121,14 @@ class RoleSelectionScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'I am a Farmer',
+                                context.tr('role_farmer_title'),
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'List crops, aggregate lots, match buyers, and track logistics',
+                                context.tr('role_farmer_desc'),
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   fontSize: 12,
                                   color: AppColors.onSurfaceVariant,
@@ -173,14 +182,14 @@ class RoleSelectionScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'I am a Buyer',
+                                context.tr('role_buyer_title'),
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Source verified lots directly from farmers with smart insights',
+                                context.tr('role_buyer_desc'),
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   fontSize: 12,
                                   color: AppColors.onSurfaceVariant,

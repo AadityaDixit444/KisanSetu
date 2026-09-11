@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../localization/language_scope.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/language_toggle_button.dart';
 import '../notifications_screen.dart';
 import 'browse_lots_screen.dart';
 import 'buyer_lot_details_screen.dart';
@@ -107,9 +109,9 @@ class BuyerDashboard extends StatelessWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Good morning, Buyer',
-              style: TextStyle(
+            Text(
+              '${context.tr('greeting_morning')} ${context.tr('role_buyer')}',
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
               ),
@@ -124,9 +126,10 @@ class BuyerDashboard extends StatelessWidget {
           ],
         ),
         actions: [
+          const LanguageToggleButton(isLightSurface: false),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
-            tooltip: 'Notifications',
+            tooltip: context.tr('notifications_title'),
             onPressed: () => _navigateToNotifications(context),
           ),
         ],

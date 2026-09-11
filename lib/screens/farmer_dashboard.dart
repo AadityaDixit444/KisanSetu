@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../localization/language_scope.dart';
+import '../widgets/language_toggle_button.dart';
 import 'notifications_screen.dart';
 import 'farmer/aggregation_screen.dart';
 import 'farmer/create_lot_screen.dart';
@@ -21,14 +23,14 @@ class FarmerDashboard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Good morning,',
+              context.tr('greeting_morning'),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: AppColors.onPrimary.withValues(alpha: 0.85),
               ),
             ),
-            const Text(
-              'Farmer',
-              style: TextStyle(
+            Text(
+              context.tr('role_farmer'),
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
               ),
@@ -36,9 +38,10 @@ class FarmerDashboard extends StatelessWidget {
           ],
         ),
         actions: [
+          const LanguageToggleButton(isLightSurface: false),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
-            tooltip: 'Notifications',
+            tooltip: context.tr('notifications_title'),
             onPressed: () {
               Navigator.push(
                 context,
@@ -75,7 +78,7 @@ class FarmerDashboard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Market Overview',
+                            context.tr('market_overview'),
                             style: theme.textTheme.titleMedium?.copyWith(
                               color: AppColors.onSurfaceVariant,
                             ),
@@ -89,9 +92,9 @@ class FarmerDashboard extends StatelessWidget {
                               color: AppColors.primaryContainer,
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Text(
-                              'Live APMC',
-                              style: TextStyle(
+                            child: Text(
+                              context.tr('live_apmc'),
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.onPrimaryContainer,
@@ -176,18 +179,18 @@ class FarmerDashboard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'AI Market Signal',
-                            style: TextStyle(
+                          Text(
+                            context.tr('ai_market_signal'),
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: AppColors.onTertiaryContainer,
                             ),
                           ),
                           const SizedBox(height: 2),
-                          const Text(
-                            'SELL PARTIALLY',
-                            style: TextStyle(
+                          Text(
+                            context.tr('signal_sell_partially'),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
                               color: AppColors.tertiary,
@@ -196,7 +199,7 @@ class FarmerDashboard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Lock profits for 40% stock today. Remaining lot can gain from expected surge next week.',
+                            context.tr('ai_recommendation_wheat'),
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: AppColors.onTertiaryContainer,
                             ),
@@ -217,7 +220,7 @@ class FarmerDashboard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Net Realisable Price Breakdown',
+                      context.tr('net_realisable_breakdown'),
                       style: theme.textTheme.titleMedium,
                     ),
                     const SizedBox(height: 14),
@@ -246,7 +249,7 @@ class FarmerDashboard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Net Price',
+                          context.tr('net_price'),
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -300,14 +303,14 @@ class FarmerDashboard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Create New Lot',
+                              context.tr('create_new_lot'),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'List your crop and connect with buyers',
+                              context.tr('create_new_lot_desc'),
                               style: theme.textTheme.bodyMedium,
                             ),
                           ],
@@ -359,19 +362,19 @@ class FarmerDashboard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'My Lots',
+                              context.tr('my_lots'),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'View and manage your listed crops',
+                              context.tr('my_lots_desc'),
                               style: theme.textTheme.bodyMedium,
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '2 Active Lots • 180 qtl',
+                              context.tr('active_lots_summary'),
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
