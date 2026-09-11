@@ -1,27 +1,40 @@
 import 'package:flutter/material.dart';
+import '../../services/offer_service.dart';
 import '../../theme/app_colors.dart';
 import 'offer_submitted_screen.dart';
 
-class OfferReviewScreen extends StatelessWidget {
+class OfferReviewScreen extends StatefulWidget {
+  final String lotId;
   final String crop;
   final String quantity;
   final String offerPrice;
   final String location;
   final String askingPrice;
+  final String? demandId;
 
   const OfferReviewScreen({
     super.key,
+    required this.lotId,
     required this.crop,
     required this.quantity,
     required this.offerPrice,
     required this.location,
     required this.askingPrice,
+    this.demandId,
   });
 
-  double get _totalOfferValue {
-    final price = double.tryParse(offerPrice.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
-    final qty = double.tryParse(quantity.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
-    return price * qty;
+  @override
+  State<OfferReviewScreen> createState() => _OfferReviewScreenState();
+}
+
+class _OfferReviewScreenState extends State<OfferReviewScreen> {
+  final OfferService _offerService = OfferService();
+  bool _isSubmitting = false;
+
+  double _parseDouble(dynamic val) {
+    if (val == null) return 0.0;
+    if (val is num) return val.toDouble();
+    return double.tryParse(val.toString().replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
   }
 
   String _formatCurrency(double amount) {
@@ -31,205 +44,182 @@ class OfferReviewScreen extends StatelessWidget {
         )}';
   }
 
-  void _onSubmitOffer(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => OfferSubmittedScreen(
-          crop: crop,
-          quantity: quantity,
-          offerPrice: offerPrice,
-          location: location,
-          askingPrice: askingPrice,
+  Future<void> _onSubmitOffer() async {
+    if (_isSubmitting) return;
+
+    final parsedPrice = _parseDouble(widget.offerPrice);
+    final parsedQty = _parseDouble(widget.quantity);
+
+    if (parsedPrice <= 0 || parsedQty <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid offer price or quantity.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      await _offerService.createOffer(
+        lotId: widget.lotId,
+        offerPrice: parsedPrice,
+        quantity: parsedQty,
+        demandId: widget.demandId,
+      );
+
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OfferSubmittedScreen(
+            lotId: widget.lotId,
+            crop: widget.crop,
+            quantity: widget.quantity,
+            offerPrice: widget.offerPrice,
+            location: widget.location,
+            askingPrice: widget.askingPrice,
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final parsedPrice = _parseDouble(widget.offerPrice);
+    final parsedQty = _parseDouble(widget.quantity);
+    final totalAmount = parsedPrice * parsedQty;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Review Offer'),
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
           children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Lot Summary',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryContainer,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'Active Lot',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.onPrimaryContainer,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      crop,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on_outlined,
-                          size: 16,
-                          color: AppColors.outline,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          location,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Offer Summary',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _SummaryRow(
-                      icon: Icons.sell_outlined,
-                      label: 'Asking Price',
-                      value: askingPrice.contains('/qtl') ? askingPrice : '$askingPrice/qtl',
-                    ),
-                    const SizedBox(height: 10),
-                    _SummaryRow(
-                      icon: Icons.currency_rupee_rounded,
-                      label: 'Your Offer Price',
-                      value: offerPrice.contains('/qtl') ? offerPrice : '₹$offerPrice/qtl',
-                      isHighlighted: true,
-                    ),
-                    const SizedBox(height: 10),
-                    _SummaryRow(
-                      icon: Icons.scale_rounded,
-                      label: 'Quantity Requested',
-                      value: quantity.contains('qtl') ? quantity : '$quantity qtl',
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Divider(color: AppColors.outlineVariant),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Total Offer Value',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.onSurface,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                widget.crop,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.secondaryContainer,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Text(
+                                  'Ready to Submit',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.secondary,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            _formatCurrency(_totalOfferValue),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.primary,
-                            ),
+                          const Divider(height: 24, color: AppColors.outlineVariant),
+                          _DetailRow(
+                            label: 'Offered Unit Price',
+                            value: '₹${widget.offerPrice}/qtl',
+                            isBold: true,
+                            valueColor: AppColors.primary,
+                          ),
+                          const SizedBox(height: 10),
+                          _DetailRow(
+                            label: 'Offered Volume',
+                            value: '${widget.quantity} qtl',
+                          ),
+                          const SizedBox(height: 10),
+                          _DetailRow(
+                            label: 'Farmer Asking Price',
+                            value: '₹${widget.askingPrice}/qtl',
+                          ),
+                          const SizedBox(height: 10),
+                          _DetailRow(
+                            label: 'Produce Location',
+                            value: widget.location,
+                          ),
+                          const Divider(height: 24, color: AppColors.outlineVariant),
+                          _DetailRow(
+                            label: 'Total Contract Value',
+                            value: _formatCurrency(totalAmount),
+                            isBold: true,
+                            fontSize: 16,
+                            valueColor: AppColors.primary,
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            Card(
-              color: AppColors.background,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(color: AppColors.outlineVariant, width: 0.8),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  top: BorderSide(color: AppColors.outlineVariant),
+                ),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.info_outline_rounded,
-                      size: 20,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Your offer will be sent to the farmer for review.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontSize: 12,
-                          color: AppColors.onSurfaceVariant,
+              child: SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _onSubmitOffer,
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.onPrimary,
+                          ),
+                        )
+                      : const Text(
+                          'Confirm & Submit Offer',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ElevatedButton.icon(
-                onPressed: () => _onSubmitOffer(context),
-                icon: const Icon(Icons.send_rounded),
-                label: const Text('Submit Offer'),
-              ),
-            ),
-            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -237,41 +227,38 @@ class OfferReviewScreen extends StatelessWidget {
   }
 }
 
-class _SummaryRow extends StatelessWidget {
-  final IconData icon;
+class _DetailRow extends StatelessWidget {
   final String label;
   final String value;
-  final bool isHighlighted;
+  final bool isBold;
+  final double fontSize;
+  final Color? valueColor;
 
-  const _SummaryRow({
-    required this.icon,
+  const _DetailRow({
     required this.label,
     required this.value,
-    this.isHighlighted = false,
+    this.isBold = false,
+    this.fontSize = 14,
+    this.valueColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Icon(icon, size: 18, color: isHighlighted ? AppColors.primary : AppColors.outline),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            label,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: AppColors.onSurfaceVariant,
-            ),
-          ),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
         ),
         Text(
           value,
           style: TextStyle(
-            fontSize: isHighlighted ? 15 : 14,
-            fontWeight: isHighlighted ? FontWeight.w800 : FontWeight.w600,
-            color: isHighlighted ? AppColors.primary : AppColors.onSurface,
+            fontSize: fontSize,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+            color: valueColor ?? AppColors.onSurface,
           ),
         ),
       ],

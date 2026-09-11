@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../services/lot_service.dart';
 import '../../theme/app_colors.dart';
 
 class CreateLotScreen extends StatefulWidget {
@@ -10,58 +11,87 @@ class CreateLotScreen extends StatefulWidget {
 
 class _CreateLotScreenState extends State<CreateLotScreen> {
   final _formKey = GlobalKey<FormState>();
-
-  final List<String> _cropOptions = const ['Wheat', 'Rice', 'Maize'];
-  final List<String> _qualityOptions = const ['Good Quality', 'Premium Quality'];
-
-  String? _selectedCrop = 'Wheat';
-  String? _selectedQuality = 'Good Quality';
+  final LotService _lotService = LotService();
 
   final TextEditingController _quantityController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController(text: 'Meerut');
-  final TextEditingController _priceController = TextEditingController();
-  final TextEditingController _notesController = TextEditingController();
+  final TextEditingController _askingPriceController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
 
-  DateTime? _availableFromDate = DateTime.now();
+  String _selectedCrop = 'Wheat';
+  String _selectedQuality = 'Grade A';
+  bool _isSubmitting = false;
+
+  final List<String> _cropOptions = const [
+    'Wheat',
+    'Rice (Basmati)',
+    'Mustard',
+    'Sugarcane',
+    'Potato',
+    'Tomato',
+    'Onion',
+    'Maize',
+  ];
+
+  final List<String> _qualityOptions = const [
+    'Grade A',
+    'Grade B',
+    'Standard',
+    'Fair Average Quality (FAQ)',
+  ];
 
   @override
   void dispose() {
     _quantityController.dispose();
+    _askingPriceController.dispose();
     _locationController.dispose();
-    _priceController.dispose();
-    _notesController.dispose();
     super.dispose();
   }
 
-  Future<void> _pickAvailableDate() async {
-    final now = DateTime.now();
-    final pickedDate = await showDatePicker(
-      context: context,
-      initialDate: _availableFromDate ?? now,
-      firstDate: now.subtract(const Duration(days: 1)),
-      lastDate: now.add(const Duration(days: 120)),
-    );
+  Future<void> _submitLot() async {
+    if (_isSubmitting) return;
+    if (!_formKey.currentState!.validate()) return;
 
-    if (pickedDate != null) {
-      setState(() {
-        _availableFromDate = pickedDate;
-      });
-    }
-  }
+    final quantity = double.tryParse(_quantityController.text.trim()) ?? 0.0;
+    final askingPrice = double.tryParse(_askingPriceController.text.trim()) ?? 0.0;
+    final location = _locationController.text.trim();
 
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
-  }
+    setState(() {
+      _isSubmitting = true;
+    });
 
-  void _onCreateLot() {
-    if (_formKey.currentState?.validate() ?? false) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    try {
+      await _lotService.createLot(
+        crop: _selectedCrop,
+        quantity: quantity,
+        askingPrice: askingPrice,
+        location: location,
+        quality: _selectedQuality,
+      );
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Lot created successfully'),
-          duration: Duration(seconds: 2),
+          content: Text('Produce lot listed successfully!'),
+          backgroundColor: AppColors.primary,
         ),
       );
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to create lot: ${e.toString().replaceAll('Exception: ', '')}'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 
@@ -71,183 +101,164 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create New Lot'),
+        title: const Text('List Produce Lot'),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Card(
-                  margin: EdgeInsets.zero,
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Produce Details',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Harvested Lot Details',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Divider(height: 24, color: AppColors.outlineVariant),
+                            DropdownButtonFormField<String>(
+                              value: _selectedCrop,
+                              decoration: const InputDecoration(
+                                labelText: 'Commodity Crop',
+                                prefixIcon: Icon(Icons.agriculture_rounded),
+                              ),
+                              items: _cropOptions.map((crop) {
+                                return DropdownMenuItem(
+                                  value: crop,
+                                  child: Text(crop),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  setState(() {
+                                    _selectedCrop = val;
+                                  });
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 14),
+                            TextFormField(
+                              controller: _quantityController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: const InputDecoration(
+                                labelText: 'Available Volume (Quintals)',
+                                prefixIcon: Icon(Icons.scale_rounded),
+                              ),
+                              validator: (val) {
+                                if (val == null || val.trim().isEmpty) {
+                                  return 'Enter lot volume';
+                                }
+                                final parsed = double.tryParse(val.trim());
+                                if (parsed == null || parsed <= 0) {
+                                  return 'Volume must be greater than 0';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 14),
+                            DropdownButtonFormField<String>(
+                              value: _selectedQuality,
+                              decoration: const InputDecoration(
+                                labelText: 'Quality Grade Standard',
+                                prefixIcon: Icon(Icons.verified_outlined),
+                              ),
+                              items: _qualityOptions.map((grade) {
+                                return DropdownMenuItem(
+                                  value: grade,
+                                  child: Text(grade),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  setState(() {
+                                    _selectedQuality = val;
+                                  });
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 14),
+                            TextFormField(
+                              controller: _askingPriceController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: const InputDecoration(
+                                labelText: 'Farmer Asking Rate (₹/Quintal)',
+                                prefixIcon: Icon(Icons.currency_rupee_rounded),
+                              ),
+                              validator: (val) {
+                                if (val == null || val.trim().isEmpty) {
+                                  return 'Enter asking price';
+                                }
+                                final parsed = double.tryParse(val.trim());
+                                if (parsed == null || parsed <= 0) {
+                                  return 'Asking price must be greater than 0';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 14),
+                            TextFormField(
+                              controller: _locationController,
+                              decoration: const InputDecoration(
+                                labelText: 'Farm Warehouse / Village Depot',
+                                prefixIcon: Icon(Icons.location_on_outlined),
+                                hintText: 'e.g., Farm Warehouse, Daurala',
+                              ),
+                              validator: (val) {
+                                if (val == null || val.trim().isEmpty) {
+                                  return 'Enter pickup location';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        DropdownButtonFormField<String>(
-                          initialValue: _selectedCrop,
-                          decoration: const InputDecoration(
-                            labelText: 'Crop',
-                            prefixIcon: Icon(Icons.eco_rounded, color: AppColors.primary),
-                          ),
-                          items: _cropOptions.map((crop) {
-                            return DropdownMenuItem<String>(
-                              value: crop,
-                              child: Text(crop),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedCrop = value;
-                            });
-                          },
-                          validator: (value) =>
-                              value == null || value.isEmpty ? 'Please select a crop' : null,
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _quantityController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Quantity',
-                            hintText: 'e.g. 100',
-                            suffixText: 'qtl',
-                            prefixIcon: Icon(Icons.scale_rounded, color: AppColors.primary),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter crop quantity';
-                            }
-                            final parsed = double.tryParse(value.trim());
-                            if (parsed == null || parsed <= 0) {
-                              return 'Enter a valid quantity';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        DropdownButtonFormField<String>(
-                          initialValue: _selectedQuality,
-                          decoration: const InputDecoration(
-                            labelText: 'Quality Grade',
-                            prefixIcon: Icon(Icons.verified_outlined, color: AppColors.primary),
-                          ),
-                          items: _qualityOptions.map((quality) {
-                            return DropdownMenuItem<String>(
-                              value: quality,
-                              child: Text(quality),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedQuality = value;
-                            });
-                          },
-                          validator: (value) =>
-                              value == null || value.isEmpty ? 'Please select quality grade' : null,
-                        ),
-                      ],
+                      ),
                     ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    top: BorderSide(color: AppColors.outlineVariant),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Card(
-                  margin: EdgeInsets.zero,
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Pricing & Availability',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _locationController,
-                          decoration: const InputDecoration(
-                            labelText: 'Location',
-                            hintText: 'Enter mandi or village location',
-                            prefixIcon: Icon(Icons.location_on_outlined, color: AppColors.primary),
-                          ),
-                          validator: (value) =>
-                              value == null || value.trim().isEmpty ? 'Please enter location' : null,
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _priceController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Minimum Expected Price',
-                            hintText: 'e.g. 2400',
-                            suffixText: '₹/qtl',
-                            prefixIcon: Icon(Icons.currency_rupee_rounded, color: AppColors.primary),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter minimum price';
-                            }
-                            final parsed = double.tryParse(value.trim());
-                            if (parsed == null || parsed <= 0) {
-                              return 'Enter a valid price';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        InkWell(
-                          borderRadius: BorderRadius.circular(10),
-                          onTap: _pickAvailableDate,
-                          child: InputDecorator(
-                            decoration: const InputDecoration(
-                              labelText: 'Available From',
-                              prefixIcon: Icon(Icons.calendar_today_rounded, color: AppColors.primary),
-                              suffixIcon: Icon(Icons.arrow_drop_down_rounded),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _isSubmitting ? null : _submitLot,
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.onPrimary,
                             ),
-                            child: Text(
-                              _availableFromDate != null
-                                  ? _formatDate(_availableFromDate!)
-                                  : 'Select date',
-                              style: theme.textTheme.bodyLarge,
+                          )
+                        : const Text(
+                            'Confirm & List Produce Lot',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _notesController,
-                          maxLines: 3,
-                          decoration: const InputDecoration(
-                            labelText: 'Additional Notes',
-                            hintText: 'Moisture level, packaging, or mandi dispatch terms (optional)',
-                            alignLabelWithHint: true,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: _onCreateLot,
-                  icon: const Icon(Icons.add_task_rounded),
-                  label: const Text('Create Lot'),
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

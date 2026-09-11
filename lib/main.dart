@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'localization/app_localizations.dart';
 import 'localization/language_controller.dart';
 import 'localization/language_scope.dart';
@@ -8,6 +9,12 @@ import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://pdfmhiwulroqdwzmjzfw.supabase.co',
+    publishableKey: 'sb_publishable_4PbJLGc9CwALqwm3i65lkA_w8jxuPAC',
+  );
+
   final languageController = LanguageController();
   await languageController.initialize();
 

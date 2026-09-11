@@ -27,12 +27,12 @@ class AppLocalizations {
   /// Built-in fallback dictionary for English strings.
   static const Map<String, String> _enStrings = {
     'app_name': 'KisanSetu',
-    'app_tagline': 'Connecting Farmers & Verified Bulk Buyers',
-    'select_role_title': 'Select your role to continue',
+    'app_tagline': 'Direct Agricultural Marketplace',
+    'select_role_title': 'Choose how you want to continue:',
     'role_farmer_title': 'I am a Farmer',
-    'role_farmer_desc': 'List crops, aggregate lots, match buyers, and track logistics',
+    'role_farmer_desc': 'List produce, track live mandi rates, simulate holding returns, and connect with verified buyers.',
     'role_buyer_title': 'I am a Buyer',
-    'role_buyer_desc': 'Source verified lots directly from farmers with smart insights',
+    'role_buyer_desc': 'Source directly from farmers, post commodity demands, make bids, and track active purchases.',
 
     'language': 'Language',
     'lang_en': 'English',
@@ -110,12 +110,12 @@ class AppLocalizations {
   /// All numbers (0-9) are strictly kept in English digits.
   static const Map<String, String> _hiStrings = {
     'app_name': 'किसानसेतु',
-    'app_tagline': 'किसानों और सत्यापित थोक खरीदारों को जोड़ना',
-    'select_role_title': 'जारी रखने के लिए अपनी भूमिका चुनें',
+    'app_tagline': 'प्रत्यक्ष कृषि बाज़ार',
+    'select_role_title': 'चुनें कि आप कैसे जारी रखना चाहते हैं:',
     'role_farmer_title': 'मैं एक किसान हूँ',
-    'role_farmer_desc': 'फसलें सूचीबद्ध करें, लॉट एकत्रित करें, खरीदारों से मिलें और लॉजिस्टिक्स ट्रैक करें',
+    'role_farmer_desc': 'उत्पाद सूचीबद्ध करें, लाइव मंडी दरें ट्रैक करें, होल्डिंग रिटर्न सिम्युलेट करें और सत्यापित खरीदारों से जुड़ें।',
     'role_buyer_title': 'मैं एक खरीदार हूँ',
-    'role_buyer_desc': 'स्मार्ट विश्लेषण के साथ किसानों से सीधे सत्यापित लॉट प्राप्त करें',
+    'role_buyer_desc': 'सीधे किसानों से खरीदें, कमोडिटी मांग पोस्ट करें, बोलियां लगाएं और सक्रिय खरीदारी ट्रैक करें।',
 
     'language': 'भाषा',
     'lang_en': 'English',

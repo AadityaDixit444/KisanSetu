@@ -16,7 +16,7 @@ void main() {
     expect(find.text('KisanSetu'), findsOneWidget);
     expect(find.text('I am a Farmer'), findsOneWidget);
     expect(find.text('I am a Buyer'), findsOneWidget);
-    expect(find.text('Select your role to continue'), findsOneWidget);
+    expect(find.text('Choose how you want to continue:'), findsOneWidget);
     expect(find.text('EN'), findsOneWidget);
     expect(find.text('हि'), findsOneWidget);
   });
@@ -38,7 +38,7 @@ void main() {
     expect(find.text('किसानसेतु'), findsOneWidget);
     expect(find.text('मैं एक किसान हूँ'), findsOneWidget);
     expect(find.text('मैं एक खरीदार हूँ'), findsOneWidget);
-    expect(find.text('जारी रखने के लिए अपनी भूमिका चुनें'), findsOneWidget);
+    expect(find.text('चुनें कि आप कैसे जारी रखना चाहते हैं:'), findsOneWidget);
 
     // Tap on the English toggle segment 'EN'
     await tester.tap(find.text('EN'));
