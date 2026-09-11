@@ -140,7 +140,9 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
           ],
         ),
         actions: [
-          const LanguageToggleButton(isLightSurface: false),
+          const Center(
+            child: LanguageToggleButton(isLightSurface: false),
+          ),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             tooltip: context.tr('notifications_title'),

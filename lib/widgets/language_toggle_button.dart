@@ -65,6 +65,7 @@ class LanguageToggleButton extends StatelessWidget {
                 _buildSegment(
                   text: 'EN',
                   isActive: !isHindi,
+                  onTap: () => context.setLanguage(AppLanguage.en),
                   activeColor: activePillColor,
                   activeTextColor: activeTextColor,
                   inactiveTextColor: inactiveTextColor,
@@ -73,6 +74,7 @@ class LanguageToggleButton extends StatelessWidget {
                 _buildSegment(
                   text: 'हि',
                   isActive: isHindi,
+                  onTap: () => context.setLanguage(AppLanguage.hi),
                   activeColor: activePillColor,
                   activeTextColor: activeTextColor,
                   inactiveTextColor: inactiveTextColor,
@@ -88,33 +90,38 @@ class LanguageToggleButton extends StatelessWidget {
   Widget _buildSegment({
     required String text,
     required bool isActive,
+    required VoidCallback onTap,
     required Color activeColor,
     required Color activeTextColor,
     required Color inactiveTextColor,
   }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeInOut,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: isActive ? activeColor : Colors.transparent,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: isActive
-            ? [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.12),
-                  blurRadius: 3,
-                  offset: const Offset(0, 1),
-                ),
-              ]
-            : null,
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
-          color: isActive ? activeTextColor : inactiveTextColor,
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isActive ? activeColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+            color: isActive ? activeTextColor : inactiveTextColor,
+          ),
         ),
       ),
     );

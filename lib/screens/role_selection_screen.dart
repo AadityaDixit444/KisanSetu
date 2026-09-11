@@ -69,16 +69,28 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            ListView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 24,
-              ),
-              children: [
-                const SizedBox(height: 36),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: Center(
+              child: LanguageToggleButton(isLightSurface: true),
+            ),
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          ListView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 8,
+            ),
+            children: [
+              const SizedBox(height: 12),
                 Center(
                   child: Container(
                     padding: const EdgeInsets.all(18),
@@ -254,12 +266,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 ),
               ],
             ),
-            // Global Hindi/English Language Toggle pinned at top-right
-            Positioned(
-              top: 12,
-              right: 16,
-              child: const LanguageToggleButton(isLightSurface: true),
-            ),
             if (_isLoading)
               Positioned.fill(
                 child: Container(
@@ -271,7 +277,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               ),
           ],
         ),
-      ),
     );
   }
 }

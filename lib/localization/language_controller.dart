@@ -22,10 +22,17 @@ class LanguageController extends ChangeNotifier {
 
   /// Loads stored language preference on application startup.
   Future<void> initialize() async {
-    final saved = await _preferences.getSavedLanguage();
-    if (saved != _currentLanguage) {
-      _currentLanguage = saved;
-      notifyListeners();
+    try {
+      final saved = await _preferences.getSavedLanguage().timeout(
+            const Duration(seconds: 2),
+            onTimeout: () => _currentLanguage,
+          );
+      if (saved != _currentLanguage) {
+        _currentLanguage = saved;
+        notifyListeners();
+      }
+    } catch (_) {
+      // Gracefully maintain default language on any storage failure
     }
   }
 

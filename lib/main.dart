@@ -10,13 +10,26 @@ import 'theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Supabase.initialize(
-    url: 'https://pdfmhiwulroqdwzmjzfw.supabase.co',
-    publishableKey: 'sb_publishable_4PbJLGc9CwALqwm3i65lkA_w8jxuPAC',
-  );
+  try {
+    await Supabase.initialize(
+      url: 'https://pdfmhiwulroqdwzmjzfw.supabase.co',
+      publishableKey: 'sb_publishable_4PbJLGc9CwALqwm3i65lkA_w8jxuPAC',
+    );
+  } catch (error) {
+    debugPrint('Supabase initialization fallback: $error');
+  }
 
   final languageController = LanguageController();
-  await languageController.initialize();
+  try {
+    await languageController.initialize().timeout(
+          const Duration(seconds: 2),
+          onTimeout: () {
+            debugPrint('LanguageController initialization timed out; continuing with default.');
+          },
+        );
+  } catch (error) {
+    debugPrint('LanguageController initialization fallback: $error');
+  }
 
   runApp(KisanSetuApp(languageController: languageController));
 }

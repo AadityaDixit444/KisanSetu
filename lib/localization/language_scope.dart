@@ -58,4 +58,8 @@ extension LanguageContextExtensions on BuildContext {
 
   /// Toggles the language between English and Hindi.
   void toggleLanguage() => LanguageScope.read(this).toggleLanguage();
+
+  /// Sets the application's language to [language].
+  void setLanguage(AppLanguage language) =>
+      LanguageScope.read(this).setLanguage(language);
 }
