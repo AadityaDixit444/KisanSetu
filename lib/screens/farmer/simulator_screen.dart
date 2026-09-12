@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../../services/market_price_service.dart';
 import '../../theme/app_colors.dart';
+import '../../localization/language_scope.dart';
 
 class SimulatorScreen extends StatefulWidget {
   const SimulatorScreen({super.key});
@@ -11,8 +13,9 @@ class SimulatorScreen extends StatefulWidget {
 
 class _SimulatorScreenState extends State<SimulatorScreen> {
   final MarketPriceService _marketPriceService = MarketPriceService();
-  final TextEditingController _quantityController =
-      TextEditingController(text: '100');
+  final TextEditingController _quantityController = TextEditingController(
+    text: '100',
+  );
 
   bool _isLoading = true;
   String? _errorMessage;
@@ -83,7 +86,9 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
   double _parseDouble(dynamic val, {double fallback = 0.0}) {
     if (val == null) return fallback;
     if (val is num) return val.toDouble();
-    return double.tryParse(val.toString().replaceAll(RegExp(r'[^0-9.-]'), '')) ??
+    return double.tryParse(
+          val.toString().replaceAll(RegExp(r'[^0-9.-]'), ''),
+        ) ??
         fallback;
   }
 
@@ -94,10 +99,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
   }
 
   String _formatCurrency(double amount) {
-    return '₹${amount.toStringAsFixed(0).replaceAllMapped(
-          RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'),
-          (match) => '${match[1]},',
-        )}';
+    return '₹${amount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'), (match) => '${match[1]},')}';
   }
 
   String _formatPrice(double price) {
@@ -108,7 +110,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
   }
 
   (String action, String reason, Color color, Color containerColor)
-      _calculateRecommendation(double priceChange, String demandLevel) {
+  _calculateRecommendation(double priceChange, String demandLevel) {
     final normalizedDemand = demandLevel.trim().toLowerCase();
 
     if (priceChange >= 3.0 && normalizedDemand == 'high') {
@@ -183,7 +185,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
           tooltip: 'Back',
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('What-If Price Simulator'),
+        title: Text(context.tr('what_if_price_simulator')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
@@ -210,7 +212,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Market Assumptions',
+                            context.tr('market_assumptions'),
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -235,7 +237,10 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                           ),
                         ],
                       ),
-                      const Divider(height: 24, color: AppColors.outlineVariant),
+                      const Divider(
+                        height: 24,
+                        color: AppColors.outlineVariant,
+                      ),
                       _ParamRow(
                         label: 'Current Mandi Rate',
                         value: currentPrice != null
@@ -246,12 +251,13 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                       const SizedBox(height: 10),
                       _ParamRow(
                         label: 'Recorded Price Trend',
-                        value: '${_priceChangePercent >= 0 ? '+' : ''}$_priceChangePercent%',
-                        subvalue: 'Recent Mandi movement',
+                        value:
+                            '${_priceChangePercent >= 0 ? '+' : ''}$_priceChangePercent%',
+                        subvalue: context.tr('recent_mandi_movement'),
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Harvest Lot Volume (Quintals)',
+                        context.tr('harvest_lot_volume'),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -259,8 +265,9 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _quantityController,
-                        keyboardType:
-                            const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         decoration: const InputDecoration(
                           hintText: 'Enter quantity in quintals',
                           suffixText: 'qtl',
@@ -269,8 +276,9 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                         onChanged: (val) {
                           final parsed = double.tryParse(val.trim());
                           setState(() {
-                            _stockQuantity =
-                                (parsed != null && parsed > 0) ? parsed : 0.0;
+                            _stockQuantity = (parsed != null && parsed > 0)
+                                ? parsed
+                                : 0.0;
                           });
                         },
                       ),
@@ -305,9 +313,12 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                           ),
                         ],
                       ),
-                      const Divider(height: 18, color: AppColors.outlineVariant),
+                      const Divider(
+                        height: 18,
+                        color: AppColors.outlineVariant,
+                      ),
                       Text(
-                        '• Transport: ₹2,500 flat per haulage\n• Storage (Hold 7d): ₹100/quintal\n• Storage (Hold 15d): ₹200/quintal',
+                        context.tr('cost_assumptions'),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: AppColors.onSurfaceVariant,
                           height: 1.4,
@@ -404,7 +415,10 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
               else ...[
                 // Best Scenario Callout Banner
                 Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   color: AppColors.primaryContainer.withValues(alpha: 0.35),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -525,11 +539,11 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                             ),
                           ],
                         ),
-                        const Divider(height: 18, color: AppColors.outlineVariant),
-                        Text(
-                          recReason,
-                          style: theme.textTheme.bodyMedium,
+                        const Divider(
+                          height: 18,
+                          color: AppColors.outlineVariant,
                         ),
+                        Text(recReason, style: theme.textTheme.bodyMedium),
                         const SizedBox(height: 6),
                         Text(
                           'Based on live price trend ($_priceChangePercent%) and demand level ($_demandLevel).',
@@ -573,24 +587,19 @@ class _ParamRow extends StatelessWidget {
           children: [
             Text(
               label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
             ),
             Text(
               subvalue,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: AppColors.onSurfaceVariant),
             ),
           ],
         ),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
         ),
       ],
     );
@@ -662,8 +671,10 @@ class _ScenarioCard extends StatelessWidget {
                   ],
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: badgeColor,
                     borderRadius: BorderRadius.circular(6),
@@ -727,11 +738,7 @@ class _LineRow extends StatelessWidget {
   final String value;
   final Color? valueColor;
 
-  const _LineRow({
-    required this.label,
-    required this.value,
-    this.valueColor,
-  });
+  const _LineRow({required this.label, required this.value, this.valueColor});
 
   @override
   Widget build(BuildContext context) {
@@ -740,9 +747,8 @@ class _LineRow extends StatelessWidget {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: AppColors.onSurfaceVariant),
         ),
         Text(
           value,

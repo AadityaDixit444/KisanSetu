@@ -126,7 +126,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
                             ),
                             const Divider(height: 24, color: AppColors.outlineVariant),
                             DropdownButtonFormField<String>(
-                              value: _selectedCrop,
+                              initialValue: _selectedCrop,
                               decoration: const InputDecoration(
                                 labelText: 'Commodity Crop',
                                 prefixIcon: Icon(Icons.agriculture_rounded),
@@ -166,7 +166,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
                             ),
                             const SizedBox(height: 14),
                             DropdownButtonFormField<String>(
-                              value: _selectedQuality,
+                              initialValue: _selectedQuality,
                               decoration: const InputDecoration(
                                 labelText: 'Quality Grade Standard',
                                 prefixIcon: Icon(Icons.verified_outlined),

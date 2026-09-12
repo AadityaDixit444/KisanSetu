@@ -1,182 +1,159 @@
 import 'package:flutter/material.dart';
+import '../../localization/language_scope.dart';
 import '../../theme/app_colors.dart';
 import 'buyer_offers_screen.dart';
 
 class LotDetailsScreen extends StatelessWidget {
-  final String crop;
-  final String quantity;
-  final String quality;
-  final String location;
-  final String expectedPrice;
-  final String status;
+  final Map<String, dynamic> lot;
 
-  const LotDetailsScreen({
-    super.key,
-    required this.crop,
-    required this.quantity,
-    required this.quality,
-    required this.location,
-    required this.expectedPrice,
-    required this.status,
-  });
+  const LotDetailsScreen({super.key, required this.lot});
 
-  void _onViewBuyerOffers(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const BuyerOffersScreen(),
-      ),
-    );
+  double _parseDouble(dynamic val) {
+    if (val == null) return 0.0;
+    if (val is num) return val.toDouble();
+    return double.tryParse(val.toString().replaceAll(RegExp(r'[^0-9.-]'), '')) ?? 0.0;
   }
 
-  IconData _getCropIcon(String cropName) {
-    switch (cropName.toLowerCase()) {
-      case 'wheat':
-        return Icons.eco_rounded;
-      case 'rice':
-        return Icons.grass_rounded;
-      case 'maize':
-        return Icons.grain_rounded;
-      default:
-        return Icons.agriculture_rounded;
+  String _formatPrice(dynamic rawPrice) {
+    final val = _parseDouble(rawPrice);
+    if (val % 1 == 0) {
+      return '₹${val.toInt().toString().replaceAllMapped(RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'), (m) => '${m[1]},')}/qtl';
+    }
+    return '₹${val.toStringAsFixed(2)}/qtl';
+  }
+
+  String _formatQuantity(dynamic rawQty) {
+    final val = _parseDouble(rawQty);
+    return val % 1 == 0 ? '${val.toInt()} qtl' : '$val qtl';
+  }
+
+  String _formatLotId(dynamic rawId) {
+    if (rawId == null) return 'LOT-N/A';
+    final idStr = rawId.toString();
+    if (idStr.length > 8) {
+      return 'LOT-${idStr.substring(0, 8).toUpperCase()}';
+    }
+    return 'LOT-${idStr.toUpperCase()}';
+  }
+
+  String _formatDate(dynamic rawDate) {
+    if (rawDate == null) return 'Immediate';
+    try {
+      final parsed = DateTime.parse(rawDate.toString());
+      final months = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      ];
+      final day = parsed.day.toString().padLeft(2, '0');
+      return '$day ${months[parsed.month - 1]} ${parsed.year}';
+    } catch (_) {
+      return rawDate.toString();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isActive = status.toLowerCase() == 'active';
+
+    final rawId = lot['id'];
+    final lotIdDisplay = _formatLotId(rawId);
+    final crop = lot['crop']?.toString() ?? 'Produce';
+    final quantity = _formatQuantity(lot['quantity']);
+    final askingPrice = _formatPrice(lot['asking_price'] ?? lot['expected_price'] ?? lot['price']);
+    final quality = lot['quality']?.toString() ?? 'Standard';
+    final location = lot['location']?.toString() ?? 'Local Mandi';
+    final availableFrom = _formatDate(lot['available_from'] ?? lot['created_at']);
+    final status = lot['status']?.toString() ?? 'Active';
+    final isActive = status.toLowerCase().trim() == 'active';
+
+    final dynamic offersRaw = lot['offers'];
+    int offerCount = 0;
+    if (offersRaw is List) {
+      offerCount = offersRaw.length;
+    } else if (lot['offers_count'] != null) {
+      offerCount = _parseDouble(lot['offers_count']).toInt();
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lot Details'),
+        title: Text(context.tr('lot_details')),
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.all(16),
           children: [
-            // Header Card
             Card(
+              margin: EdgeInsets.zero,
               child: Padding(
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.background,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: AppColors.outlineVariant),
-                          ),
-                          child: const Text(
-                            'Lot ID: KS-LOT-1001',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.onSurfaceVariant,
-                            ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                crop,
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${context.tr('lot_id')}: $lotIdDisplay',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: AppColors.outline,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: isActive
-                                ? AppColors.primaryContainer
-                                : AppColors.surfaceVariant,
+                            color: isActive ? AppColors.primaryContainer : AppColors.surfaceVariant,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            status,
+                            status.toUpperCase(),
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: isActive
-                                  ? AppColors.onPrimaryContainer
-                                  : AppColors.onSurfaceVariant,
+                              fontWeight: FontWeight.bold,
+                              color: isActive ? AppColors.primary : AppColors.onSurfaceVariant,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor: isActive
-                              ? AppColors.primaryContainer
-                              : AppColors.surfaceVariant,
-                          child: Icon(
-                            _getCropIcon(crop),
-                            color: isActive ? AppColors.primary : AppColors.outline,
-                            size: 28,
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              crop,
-                              style: theme.textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Available From: 03 Sep 2026',
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                          ],
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryContainer.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(8),
+                        color: AppColors.primaryContainer.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.calculate_outlined,
-                            color: AppColors.primary,
-                            size: 22,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [ 
+                          Text(
+                            context.tr('estimated_net_realisable_price'),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                            ),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Estimated Net Realisable Price',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontSize: 12,
-                                    color: AppColors.onPrimaryContainer,
-                                  ),
-                                ),
-                                const SizedBox(height: 1),
-                                const Text(
-                                  '₹2,320/qtl',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                              ],
+                          const SizedBox(height: 4),
+                          Text(
+                            askingPrice,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
                             ),
                           ),
                         ],
@@ -186,68 +163,81 @@ class LotDetailsScreen extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Produce Specifications Card
+            const SizedBox(height: 16),
             Card(
+              margin: EdgeInsets.zero,
               child: Padding(
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Produce Specifications',
+                      context.tr('produce_specifications'),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    _SpecificationRow(
-                      icon: Icons.scale_rounded,
-                      label: 'Quantity',
+                    const Divider(height: 24, color: AppColors.outlineVariant),
+                    _SpecItem(
+                      label: context.tr('quantity'),
                       value: quantity,
+                      icon: Icons.scale_outlined,
                     ),
                     const SizedBox(height: 12),
-                    _SpecificationRow(
-                      icon: Icons.verified_outlined,
-                      label: 'Quality Grade',
+                    _SpecItem(
+                      label: context.tr('quality_grade'),
                       value: quality,
+                      icon: Icons.verified_outlined,
                     ),
                     const SizedBox(height: 12),
-                    _SpecificationRow(
+                    _SpecItem(
+                      label: context.tr('expected_price'),
+                      value: askingPrice,
                       icon: Icons.currency_rupee_rounded,
-                      label: 'Expected Price',
-                      value: expectedPrice,
-                      isEmphasized: true,
+                      valueColor: AppColors.primary,
+                      isBold: true,
                     ),
                     const SizedBox(height: 12),
-                    _SpecificationRow(
-                      icon: Icons.location_on_outlined,
-                      label: 'Location',
+                    _SpecItem(
+                      label: context.tr('location'),
                       value: location,
+                      icon: Icons.location_on_outlined,
                     ),
                     const SizedBox(height: 12),
-                    const _SpecificationRow(
-                      icon: Icons.calendar_today_rounded,
-                      label: 'Available From',
-                      value: '03 Sep 2026',
+                    _SpecItem(
+                      label: context.tr('available_from'),
+                      value: availableFrom,
+                      icon: Icons.calendar_today_outlined,
                     ),
                   ],
                 ),
               ),
             ),
-
-            const SizedBox(height: 16),
-
-            // Call to Action
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
               child: ElevatedButton.icon(
-                onPressed: () => _onViewBuyerOffers(context),
-                icon: const Icon(Icons.local_offer_rounded),
-                label: const Text('View Buyer Offers'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const BuyerOffersScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.local_offer_outlined),
+                label: Text(
+                  offerCount > 0
+                      ? '${context.tr('view_buyer_offers')} ($offerCount)'
+                      : context.tr('view_buyer_offers'),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -255,17 +245,19 @@ class LotDetailsScreen extends StatelessWidget {
   }
 }
 
-class _SpecificationRow extends StatelessWidget {
-  final IconData icon;
+class _SpecItem extends StatelessWidget {
   final String label;
   final String value;
-  final bool isEmphasized;
+  final IconData icon;
+  final Color? valueColor;
+  final bool isBold;
 
-  const _SpecificationRow({
-    required this.icon,
+  const _SpecItem({
     required this.label,
     required this.value,
-    this.isEmphasized = false,
+    required this.icon,
+    this.valueColor,
+    this.isBold = false,
   });
 
   @override
@@ -274,37 +266,22 @@ class _SpecificationRow extends StatelessWidget {
 
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.outlineVariant, width: 0.7),
-          ),
-          child: Icon(icon, size: 18, color: AppColors.primary),
-        ),
-        const SizedBox(width: 12),
+        Icon(icon, size: 18, color: AppColors.outline),
+        const SizedBox(width: 10),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontSize: 12,
-                  color: AppColors.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 1),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: isEmphasized ? AppColors.primary : AppColors.onSurface,
-                ),
-              ),
-            ],
+          child: Text(
+            label,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: isBold ? 15 : 14,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+            color: valueColor ?? AppColors.onSurface,
           ),
         ),
       ],

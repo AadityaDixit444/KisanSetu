@@ -150,7 +150,7 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                             ),
                             const Divider(height: 24, color: AppColors.outlineVariant),
                             DropdownButtonFormField<String>(
-                              value: _selectedCrop,
+                              initialValue: _selectedCrop,
                               decoration: const InputDecoration(
                                 labelText: 'Commodity Crop',
                                 prefixIcon: Icon(Icons.agriculture_rounded),
@@ -179,7 +179,7 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                             ),
                             const SizedBox(height: 14),
                             DropdownButtonFormField<String>(
-                              value: _selectedQuality,
+                              initialValue: _selectedQuality,
                               decoration: const InputDecoration(
                                 labelText: 'Target Quality Standard',
                                 prefixIcon: Icon(Icons.verified_outlined),

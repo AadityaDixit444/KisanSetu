@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../../services/market_price_service.dart';
 import '../../theme/app_colors.dart';
 import 'simulator_screen.dart';
+import '../../localization/language_scope.dart';
 
 class MarketScreen extends StatefulWidget {
   const MarketScreen({super.key});
@@ -82,9 +84,7 @@ class _MarketScreenState extends State<MarketScreen> {
   String _formatPrice(dynamic rawPrice) {
     final value = _parseDouble(rawPrice);
 
-    final formatted = value.toStringAsFixed(
-      value % 1 == 0 ? 0 : 2,
-    );
+    final formatted = value.toStringAsFixed(value % 1 == 0 ? 0 : 2);
 
     final parts = formatted.split('.');
     final integerPart = parts[0];
@@ -201,8 +201,7 @@ class _MarketScreenState extends State<MarketScreen> {
       final market = item['market']?.toString() ?? '';
 
       return _matchesCrop(crop, _selectedCrop) &&
-          market.toLowerCase().trim() ==
-              _selectedMarket.toLowerCase().trim();
+          market.toLowerCase().trim() == _selectedMarket.toLowerCase().trim();
     }).toList();
   }
 
@@ -216,11 +215,11 @@ class _MarketScreenState extends State<MarketScreen> {
     filtered.sort((a, b) {
       final aDate =
           DateTime.tryParse(a['recorded_at']?.toString() ?? '') ??
-              DateTime.fromMillisecondsSinceEpoch(0);
+          DateTime.fromMillisecondsSinceEpoch(0);
 
       final bDate =
           DateTime.tryParse(b['recorded_at']?.toString() ?? '') ??
-              DateTime.fromMillisecondsSinceEpoch(0);
+          DateTime.fromMillisecondsSinceEpoch(0);
 
       return bDate.compareTo(aDate);
     });
@@ -228,10 +227,7 @@ class _MarketScreenState extends State<MarketScreen> {
     return filtered.first;
   }
 
-  String _getRecommendation(
-    dynamic rawPriceChange,
-    String demandLevel,
-  ) {
+  String _getRecommendation(dynamic rawPriceChange, String demandLevel) {
     final priceChange = _parseDouble(rawPriceChange);
     final demand = demandLevel.toLowerCase();
 
@@ -274,11 +270,11 @@ class _MarketScreenState extends State<MarketScreen> {
           tooltip: 'Back',
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Market Intelligence'),
+        title: Text(context.tr('market_intelligence')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh',
+            tooltip: context.tr('refresh'),
             onPressed: _fetchMarketRates,
           ),
         ],
@@ -293,7 +289,7 @@ class _MarketScreenState extends State<MarketScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'Select Commodity',
+                  context.tr('select_commodity'),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -333,7 +329,7 @@ class _MarketScreenState extends State<MarketScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'Select Mandi',
+                  context.tr('select_mandi'),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -356,7 +352,7 @@ class _MarketScreenState extends State<MarketScreen> {
                     filled: true,
                     fillColor: theme.colorScheme.surface,
                   ),
-                  hint: const Text('Select mandi'),
+                  hint: Text(context.tr('select_mandi')),
                   items: _availableMarkets.map((market) {
                     return DropdownMenuItem<String>(
                       value: market,
@@ -384,14 +380,12 @@ class _MarketScreenState extends State<MarketScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
                             child: Text(
-                              '$_selectedCrop Market Rate',
-                              style:
-                                  theme.textTheme.titleMedium?.copyWith(
+                              '$_selectedCrop ${context.tr('market_rate')}',
+                              style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.onSurfaceVariant,
                               ),
@@ -407,8 +401,8 @@ class _MarketScreenState extends State<MarketScreen> {
                               color: AppColors.primaryContainer,
                               borderRadius: BorderRadius.circular(7),
                             ),
-                            child: const Text(
-                              'Live Data',
+                            child: Text(
+                              context.tr('live_data'),
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
@@ -431,8 +425,7 @@ class _MarketScreenState extends State<MarketScreen> {
                       else if (benchmark != null) ...[
                         Text(
                           _formatPrice(benchmark['price']),
-                          style:
-                              theme.textTheme.headlineMedium?.copyWith(
+                          style: theme.textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -449,11 +442,9 @@ class _MarketScreenState extends State<MarketScreen> {
                             const SizedBox(width: 5),
                             Expanded(
                               child: Text(
-                                benchmark['market']
-                                        ?.toString() ??
+                                benchmark['market']?.toString() ??
                                     _selectedMarket,
-                                style:
-                                    theme.textTheme.bodyMedium?.copyWith(
+                                style: theme.textTheme.bodyMedium?.copyWith(
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -469,9 +460,7 @@ class _MarketScreenState extends State<MarketScreen> {
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  _formatPriceChange(
-                                    benchmark['price_change'],
-                                  ),
+                                  _formatPriceChange(benchmark['price_change']),
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
@@ -503,8 +492,8 @@ class _MarketScreenState extends State<MarketScreen> {
                               child: _InfoItem(
                                 icon: Icons.trending_up_rounded,
                                 title: 'Demand',
-                                value: benchmark['demand_level']
-                                        ?.toString() ??
+                                value:
+                                    benchmark['demand_level']?.toString() ??
                                     'Medium',
                               ),
                             ),
@@ -519,25 +508,25 @@ class _MarketScreenState extends State<MarketScreen> {
                               child: _InfoItem(
                                 icon: Icons.calendar_today_outlined,
                                 title: 'Recorded',
-                                value: _formatDate(
-                                  benchmark['recorded_at'],
-                                ),
+                                value: _formatDate(benchmark['recorded_at']),
                               ),
                             ),
                           ],
                         ),
                       ] else ...[
                         Text(
-                          'Rate unavailable',
-                          style:
-                              theme.textTheme.headlineSmall?.copyWith(
+                          context.tr('rate_unavailable'),
+                          style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: AppColors.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'No market record is available for $_selectedCrop at $_selectedMarket.',
+                          context
+                              .tr('no_market_record')
+                              .replaceAll('{crop}', _selectedCrop)
+                              .replaceAll('{market}', _selectedMarket),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: AppColors.onSurfaceVariant,
                           ),
@@ -570,9 +559,7 @@ class _MarketScreenState extends State<MarketScreen> {
                             recommendation == 'SELL'
                                 ? Icons.sell_outlined
                                 : Icons.trending_up_rounded,
-                            color: _recommendationColor(
-                              recommendation,
-                            ),
+                            color: _recommendationColor(recommendation),
                             size: 28,
                           ),
                         ),
@@ -581,21 +568,18 @@ class _MarketScreenState extends State<MarketScreen> {
 
                         Expanded(
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Market Recommendation',
-                                style: theme.textTheme.titleMedium
-                                    ?.copyWith(
+                                context.tr('market_recommendation'),
+                                style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Based on current price movement and buyer demand',
-                                style:
-                                    theme.textTheme.bodySmall?.copyWith(
+                                context.tr('recommendation_based_on'),
+                                style: theme.textTheme.bodySmall?.copyWith(
                                   color: AppColors.onSurfaceVariant,
                                 ),
                               ),
@@ -620,9 +604,7 @@ class _MarketScreenState extends State<MarketScreen> {
                             recommendation,
                             style: TextStyle(
                               fontWeight: FontWeight.w800,
-                              color: _recommendationColor(
-                                recommendation,
-                              ),
+                              color: _recommendationColor(recommendation),
                             ),
                           ),
                         ),
@@ -642,8 +624,7 @@ class _MarketScreenState extends State<MarketScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            const SimulatorScreen(),
+                        builder: (context) => const SimulatorScreen(),
                       ),
                     );
                   },
@@ -668,21 +649,18 @@ class _MarketScreenState extends State<MarketScreen> {
 
                         Expanded(
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'What-If Market Simulator',
-                                style: theme.textTheme.titleMedium
-                                    ?.copyWith(
+                                style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               const SizedBox(height: 3),
                               Text(
                                 'Compare Sell Now vs Hold scenarios with storage and transport costs.',
-                                style:
-                                    theme.textTheme.bodySmall?.copyWith(
+                                style: theme.textTheme.bodySmall?.copyWith(
                                   color: AppColors.onSurfaceVariant,
                                 ),
                               ),
@@ -706,8 +684,7 @@ class _MarketScreenState extends State<MarketScreen> {
               const SizedBox(height: 22),
 
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   'Mandi Comparison',
                   style: theme.textTheme.titleMedium?.copyWith(
@@ -721,9 +698,7 @@ class _MarketScreenState extends State<MarketScreen> {
               if (_isLoading)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  child: Center(child: CircularProgressIndicator()),
                 )
               else if (_errorMessage != null)
                 Padding(
@@ -749,8 +724,7 @@ class _MarketScreenState extends State<MarketScreen> {
                 )
               else if (filteredPrices.isEmpty)
                 Card(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16),
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
                   child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Center(
@@ -764,8 +738,7 @@ class _MarketScreenState extends State<MarketScreen> {
                           const SizedBox(height: 12),
                           Text(
                             'No recorded rates found',
-                            style:
-                                theme.textTheme.titleSmall?.copyWith(
+                            style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -773,10 +746,8 @@ class _MarketScreenState extends State<MarketScreen> {
                           Text(
                             'No data is currently available for $_selectedCrop at $_selectedMarket.',
                             textAlign: TextAlign.center,
-                            style:
-                                theme.textTheme.bodySmall?.copyWith(
-                              color:
-                                  AppColors.onSurfaceVariant,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: AppColors.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -799,8 +770,7 @@ class _MarketScreenState extends State<MarketScreen> {
               const SizedBox(height: 12),
 
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   'Data shown is based on the latest market records available in KisanSetu.',
                   textAlign: TextAlign.center,
@@ -851,11 +821,7 @@ class _InfoItem extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 20,
-          color: AppColors.primary,
-        ),
+        Icon(icon, size: 20, color: AppColors.primary),
         const SizedBox(width: 8),
         Expanded(
           child: Column(
@@ -903,31 +869,22 @@ class _MarketRateCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final market =
-        item['market']?.toString() ?? 'Regional Mandi';
+    final market = item['market']?.toString() ?? 'Regional Mandi';
 
-    final crop =
-        item['crop']?.toString() ?? 'Unknown Crop';
+    final crop = item['crop']?.toString() ?? 'Unknown Crop';
 
-    final demand =
-        item['demand_level']?.toString() ?? 'Medium';
+    final demand = item['demand_level']?.toString() ?? 'Medium';
 
-    final priceChange =
-        item['price_change'];
+    final priceChange = item['price_change'];
 
-    final date =
-        formatDate(item['recorded_at']);
+    final date = formatDate(item['recorded_at']);
 
     return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 6,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -982,23 +939,15 @@ class _MarketRateCard extends StatelessWidget {
                 Expanded(
                   child: _SmallStat(
                     title: 'Arrivals',
-                    value: formatArrival(
-                      item['arrival_volume'],
-                    ),
+                    value: formatArrival(item['arrival_volume']),
                   ),
                 ),
                 Expanded(
-                  child: _SmallStat(
-                    title: 'Demand',
-                    value: demand,
-                  ),
+                  child: _SmallStat(title: 'Demand', value: demand),
                 ),
                 if (date.isNotEmpty)
                   Expanded(
-                    child: _SmallStat(
-                      title: 'Updated',
-                      value: date,
-                    ),
+                    child: _SmallStat(title: 'Updated', value: date),
                   ),
               ],
             ),
@@ -1009,10 +958,7 @@ class _MarketRateCard extends StatelessWidget {
   }
 
   Color _changeColor(dynamic rawChange) {
-    final change = double.tryParse(
-          rawChange?.toString() ?? '',
-        ) ??
-        0;
+    final change = double.tryParse(rawChange?.toString() ?? '') ?? 0;
 
     if (change > 0) {
       return AppColors.primary;
@@ -1030,18 +976,14 @@ class _SmallStat extends StatelessWidget {
   final String title;
   final String value;
 
-  const _SmallStat({
-    required this.title,
-    required this.value,
-  });
+  const _SmallStat({required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,

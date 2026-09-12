@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../services/lot_service.dart';
+import '../../localization/language_scope.dart';
 import '../../theme/app_colors.dart';
 import 'buyer_offers_screen.dart';
 import 'create_lot_screen.dart';
@@ -50,9 +52,7 @@ class _LotsScreenState extends State<LotsScreen> {
   Future<void> _navigateToCreateLot(BuildContext context) async {
     final result = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const CreateLotScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const CreateLotScreen()),
     );
 
     if (result == true) {
@@ -63,16 +63,17 @@ class _LotsScreenState extends State<LotsScreen> {
   void _navigateToBuyerOffers() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const BuyerOffersScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const BuyerOffersScreen()),
     );
   }
 
   double _parseDouble(dynamic val) {
     if (val == null) return 0.0;
     if (val is num) return val.toDouble();
-    return double.tryParse(val.toString().replaceAll(RegExp(r'[^0-9.-]'), '')) ?? 0.0;
+    return double.tryParse(
+          val.toString().replaceAll(RegExp(r'[^0-9.-]'), ''),
+        ) ??
+        0.0;
   }
 
   String _formatQuantity(dynamic rawQty) {
@@ -108,7 +109,7 @@ class _LotsScreenState extends State<LotsScreen> {
           tooltip: 'Back',
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('My Produce Lots'),
+        title: Text(context.tr('my_produce_lots')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
@@ -120,7 +121,7 @@ class _LotsScreenState extends State<LotsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _navigateToCreateLot(context),
         icon: const Icon(Icons.add),
-        label: const Text('Post New Lot'),
+        label: Text(context.tr('post_new_lot')),
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -139,19 +140,22 @@ class _LotsScreenState extends State<LotsScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Active Inventory',
+                            context.tr('active_inventory'),
                             style: theme.textTheme.titleMedium?.copyWith(
                               color: AppColors.onSurfaceVariant,
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.primaryContainer,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              '${_lots.length} Listed Lots',
+                              (context.tr('listed_lots')),
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -163,14 +167,14 @@ class _LotsScreenState extends State<LotsScreen> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'Manage Produce Batches',
+                        (context.tr('manage_produce_batches')),
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Track real-time lot availability, status, and evaluate market holding returns.',
+                        context.tr('track_lot_availability'),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: AppColors.onSurfaceVariant,
                         ),
@@ -186,7 +190,7 @@ class _LotsScreenState extends State<LotsScreen> {
                           );
                         },
                         icon: const Icon(Icons.calculate_outlined, size: 18),
-                        label: const Text('Run What-If Price Simulator'),
+                        label: Text(context.tr('run_what_if_price_simulator')),
                       ),
                     ],
                   ),
@@ -198,7 +202,7 @@ class _LotsScreenState extends State<LotsScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'Harvested Produce Lots',
+                  context.tr('harvested_produce_lots'),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -282,7 +286,8 @@ class _LotsScreenState extends State<LotsScreen> {
                   final quality = lot['quality']?.toString() ?? 'Standard';
                   final rawStatus = lot['status']?.toString() ?? 'Active';
                   final isActive =
-                      (lot['status']?.toString().toLowerCase().trim() == 'active');
+                      (lot['status']?.toString().toLowerCase().trim() ==
+                      'active');
 
                   final dynamic offersRaw = lot['offers'];
                   int offerCount = 0;
@@ -292,10 +297,15 @@ class _LotsScreenState extends State<LotsScreen> {
                     offerCount = _parseDouble(lot['offers_count']).toInt();
                   }
 
-                  final offerText = offerCount > 0 ? '$offerCount Offers' : 'View Offers';
+                  final offerText = offerCount > 0
+                      ? '$offerCount Offers'
+                      : Text(context.tr('view_offers'));
 
                   return Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: _navigateToBuyerOffers,
@@ -325,19 +335,25 @@ class _LotsScreenState extends State<LotsScreen> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: AppColors.secondaryContainer,
-                                          borderRadius: BorderRadius.circular(6),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
                                         ),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             const Icon(
                                               Icons.local_offer_outlined,
-                                              size: 13,
                                               color: AppColors.secondary,
                                             ),
                                             const SizedBox(width: 4),
                                             Text(
-                                              offerText,
+                                              (offerText == 'View Offers'
+                                                      ? context.tr(
+                                                          'view_offers',
+                                                        )
+                                                      : offerText)
+                                                  .toString(),
                                               style: const TextStyle(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.bold,
@@ -383,12 +399,15 @@ class _LotsScreenState extends State<LotsScreen> {
                                 fontFamily: 'monospace',
                               ),
                             ),
-                            const Divider(height: 20, color: AppColors.outlineVariant),
+                            const Divider(
+                              height: 20,
+                              color: AppColors.outlineVariant,
+                            ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Available Volume',
+                                  context.tr('available_volume'),
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: AppColors.onSurfaceVariant,
                                   ),
@@ -424,7 +443,7 @@ class _LotsScreenState extends State<LotsScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Asking Rate',
+                                  context.tr('asking_rate'),
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: AppColors.onSurfaceVariant,
                                   ),
@@ -446,12 +465,18 @@ class _LotsScreenState extends State<LotsScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const SimulatorScreen(),
+                                      builder: (context) =>
+                                          const SimulatorScreen(),
                                     ),
                                   );
                                 },
-                                icon: const Icon(Icons.analytics_outlined, size: 16),
-                                label: const Text('Test What-If / Simulate Return'),
+                                icon: const Icon(
+                                  Icons.analytics_outlined,
+                                  size: 16,
+                                ),
+                                label: Text(
+                                  context.tr('test_what_if_simulate_return'),
+                                ),
                               ),
                             ),
                           ],

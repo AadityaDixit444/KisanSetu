@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'app_language.dart';
 import 'number_formatter.dart';
 
@@ -20,12 +21,27 @@ class AppLocalizations {
 
   /// Retrieve the [AppLocalizations] instance from the widget tree.
   static AppLocalizations of(BuildContext context) {
-    final instance = Localizations.of<AppLocalizations>(context, AppLocalizations);
+    final instance = Localizations.of<AppLocalizations>(
+      context,
+      AppLocalizations,
+    );
     return instance ?? AppLocalizations(const Locale('en'));
   }
 
   /// Built-in fallback dictionary for English strings.
   static const Map<String, String> _enStrings = {
+    'my_produce_lots': 'My Produce Lots',
+    'active_inventory': 'Active Inventory',
+    'listed_lots': 'Listed Lots',
+    'manage_produce_batches': 'Manage Produce Batches',
+    'track_lot_availability': 'Track real-time lot availability, status, and evaluate market holding returns.',
+    'run_what_if_price_simulator': 'Run What-If Price Simulator',
+    'harvested_produce_lots': 'Harvested Produce Lots',
+    'view_offers': 'View Offers',
+    'available_volume': 'Available Volume',
+    'asking_rate': 'Asking Rate',
+    'test_what_if_simulate_return': 'Test What-If / Simulate Return',
+    'post_new_lot': 'Post New Lot',
     'app_name': 'KisanSetu',
     'app_tagline': 'Direct Agricultural Marketplace',
     'select_role_title': 'Choose how you want to continue:',
@@ -48,11 +64,14 @@ class AppLocalizations {
     'notif_buyer_offer_title': 'New Buyer Offer',
     'notif_buyer_offer_desc': 'Kisan Agro Flour Mills offered ₹2,470/qtl for your Wheat lot.\n10 min ago',
     'notif_market_alert_title': 'Market Alert',
-    'notif_market_alert_desc': 'Wheat prices increased by 3.4% today in Meerut.\n1 hour ago',
+    'notif_market_alert_desc':
+        'Wheat prices increased by 3.4% today in Meerut.\n1 hour ago',
     'notif_offer_update_title': 'Offer Update',
-    'notif_offer_update_desc': 'Your offer for Wheat 150 qtl was accepted.\n3 hours ago',
+    'notif_offer_update_desc':
+        'Your offer for Wheat 150 qtl was accepted.\n3 hours ago',
     'notif_logistics_title': 'Logistics Update',
-    'notif_logistics_desc': 'Transport has been arranged for your Wheat shipment.\nYesterday',
+    'notif_logistics_desc':
+        'Transport has been arranged for your Wheat shipment.\nYesterday',
 
     'market_overview': 'Market Overview',
     'live_apmc': 'Live APMC',
@@ -69,6 +88,7 @@ class AppLocalizations {
     'ai_recommendation_wheat': 'Lock profits for 40% stock today. Remaining lot can gain from expected surge next week.',
     'net_realisable_breakdown': 'Net Realisable Price Breakdown',
     'net_price': 'Net Price',
+    
 
     'actions_tools': 'Actions & Tools',
     'create_new_lot': 'Create New Lot',
@@ -77,10 +97,12 @@ class AppLocalizations {
     'my_lots_desc': 'View and manage your listed crops',
     'active_lots_summary': '2 Active Lots • 180 qtl',
     'active_lot_badge': 'Active Lot',
+    'quality_grade_label': 'Quality Grade',
     'what_if_simulator': 'What-If Simulator',
     'what_if_simulator_desc': 'Test hold duration vs storage charges.',
     'smart_aggregation': 'Smart Aggregation',
-    'smart_aggregation_desc': 'Combine your crop with nearby farmers for larger bulk lots',
+    'smart_aggregation_desc':
+        'Combine your crop with nearby farmers for larger bulk lots',
     'intelligent_matching': 'Intelligent Buyer Matching',
     'intelligent_matching_desc': 'Find the best buyers for your crop based on price, demand and location',
     'top_buyer_opportunities': 'Top Buyer Opportunities',
@@ -92,6 +114,16 @@ class AppLocalizations {
     'recommended_lots': 'Recommended Lots',
     'recent_transactions': 'Recent Transactions',
     'my_offers': 'My Offers',
+    'lot_details': 'Lot Details',
+    'lot_id': 'Lot ID',
+    'available_from': 'Available From',
+    'estimated_net_realisable_price': 'Estimated Net Realisable Price',
+    'produce_specifications': 'Produce Specifications',
+    'quantity': 'Quantity',
+    'quality_grade': 'Quality Grade',
+    'expected_price': 'Expected Price',
+    'location': 'Location',
+    'view_buyer_offers': 'View Buyer Offers',
 
     'good_quality': 'Good Quality',
     'premium_quality': 'Premium Quality',
@@ -105,50 +137,42 @@ class AppLocalizations {
     'status_delivered': 'Delivered',
     'status_payment_pending': 'Payment Pending',
 
-    'mandi_rate_meerut': 'Meerut Mandi Rate',
-    'trend_today_4_2': '+4.2% Today',
-    'per_quintal_wheat': '/ quintal (Wheat)',
-    'direct_bids_realization_desc': 'Direct aggregate bids currently yield ₹120-150/qtl higher realization.',
-    'market_recommendation_title': 'Market Recommendation',
-    'market_recommendation_desc': 'Get HOLD / SELL guidance based on live mandi conditions',
-    'post_new_produce_lot_title': 'Post New Produce Lot',
-    'post_new_produce_lot_desc': 'List harvested crop with quality, quantity & asking price',
-    'my_active_lots_title': 'My Active Lots',
-    'my_active_lots_desc': 'View listed crops, active lots & manage offers',
-    'buyer_demand_board_title': 'Buyer Demand Board',
-    'buyer_demand_board_desc': 'View active commodity requirements posted by buyers',
-    'dispatches_deals_title': 'Dispatches & Deals',
-    'dispatches_deals_desc': 'Track accepted deals, pickups & direct payments',
-    'intelligent_matching_title': 'Intelligent Buyer Matching',
-    'intelligent_matching_desc': 'Compare net realisable rates across institutional buyers',
-    'buyer_demand_label': 'Buyer Demand',
-    'compare_net_price': 'Compare Net Price',
-    'delhi_ncr_distance': 'Delhi NCR • 65 km away',
-    'wheat_demand_500': 'Wheat • Need 500 Quintals',
-    'net_rate_2520': '₹2,520/qtl net',
-    'noida_hub_distance': 'Noida Hub • 48 km away',
-    'wheat_demand_200': 'Wheat • Need 200 Quintals',
-    'net_rate_2490': '₹2,490/qtl net',
-
-    'procurement_index': 'Procurement Index',
-    'active_market': 'Active Market',
-    'per_quintal_benchmark_wheat': '/ quintal benchmark (Wheat)',
-    'direct_procurement_savings_desc': 'Direct procurement saves up to 8% on intermediary Mandi handling and commission charges.',
-    'post_commodity_demand_title': 'Post Commodity Demand',
-    'active_demands_badge': '{count} Active',
-    'broadcast_demand_desc': 'Broadcast your required quantity, target price & delivery location',
-    'browse_farmer_produce_lots': 'Browse Farmer Produce Lots',
-    'my_submitted_offers_title': 'My Submitted Offers',
-    'my_submitted_offers_desc': 'Track pending bids, accepted deals & farmer counter-proposals',
-    'direct_farmer_opportunities': 'Direct Farmer Opportunities',
-    'no_active_farmer_lots': 'No active farmer lots listed currently.',
-    'volume_with_quality': 'Volume: {volume} • {quality}',
+    'market_intelligence': 'Market Intelligence',
+    'select_commodity': 'Select Commodity',
+    'select_mandi': 'Select Mandi', 
+    'market_rate': 'Market Rate',
+    'live_data': 'Live Data',
+    'rate_unavailable': 'Rate unavailable',
+    'no_market_record': 'No market record is available for {crop} at {market}.',
+    'market_recommendation': 'Market Recommendation',
+    'recommendation_based_on': 'Based on current price movement and buyer demand',
+    'what_if_price_simulator': 'What-If Price Simulator',
+    'market_assumptions': 'Market Assumptions', 
+    'recent_mandi_movement': 'Recent Mandi movement',
+    'harvest_lot_volume': 'Harvest Lot Volume (Quintals)',
+    'cost_assumptions':
+    '• Transport: ₹2,500 flat per haulage\n'
+    '• Storage (Hold 7d): ₹100/quintal\n'
+    '• Storage (Hold 15d): ₹200/quintal',
   };
 
   /// Built-in fallback dictionary for Hindi strings.
   /// All numbers (0-9) are strictly kept in English digits.
   static const Map<String, String> _hiStrings = {
+    'my_produce_lots': 'मेरे उत्पाद लॉट',
+    'active_inventory': 'सक्रिय इन्वेंटरी',
+    'listed_lots': 'सूचीबद्ध लॉट',
+    'manage_produce_batches': 'उत्पाद बैच प्रबंधित करें',
+    'track_lot_availability': 'लॉट की उपलब्धता, स्थिति और बाजार में रोककर रखने से मिलने वाले रिटर्न को ट्रैक करें।',
+    'run_what_if_price_simulator': 'क्या-अगर मूल्य सिम्युलेटर चलाएँ',
+    'harvested_produce_lots': 'कटाई किए गए उत्पाद लॉट',
+    'view_offers': 'प्रस्ताव देखें',
+    'available_volume': 'उपलब्ध मात्रा',
+    'asking_rate': 'मांगी गई दर',
+    'test_what_if_simulate_return': 'क्या-अगर परीक्षण / रिटर्न सिमुलेट करें',
+    'post_new_lot': 'नया लॉट पोस्ट करें',
     'app_name': 'किसानसेतु',
+    'quality_grade_label': 'गुणवत्ता ग्रेड',
     'app_tagline': 'प्रत्यक्ष कृषि बाज़ार',
     'select_role_title': 'चुनें कि आप कैसे जारी रखना चाहते हैं:',
     'role_farmer_title': 'मैं एक किसान हूँ',
@@ -170,11 +194,13 @@ class AppLocalizations {
     'notif_buyer_offer_title': 'नया खरीदार प्रस्ताव',
     'notif_buyer_offer_desc': 'किसान एग्रो फ्लोर मिल्स ने आपके गेहूं लॉट के लिए ₹2,470/क्विंटल की पेशकश की।\n10 मिनट पहले',
     'notif_market_alert_title': 'बाज़ार अलर्ट',
-    'notif_market_alert_desc': 'मेरठ में आज गेहूं की कीमतों में 3.4% की वृद्धि हुई।\n1 घंटा पहले',
+    'notif_market_alert_desc':
+        'मेरठ में आज गेहूं की कीमतों में 3.4% की वृद्धि हुई।\n1 घंटा पहले',
     'notif_offer_update_title': 'प्रस्ताव अपडेट',
     'notif_offer_update_desc': 'गेहूं 150 क्विंटल के लिए आपका प्रस्ताव स्वीकार कर लिया गया।\n3 घंटे पहले',
     'notif_logistics_title': 'लॉजिस्टिक्स अपडेट',
-    'notif_logistics_desc': 'आपके गेहूं शिपमेंट के लिए परिवहन की व्यवस्था कर दी गई है।\nकल',
+    'notif_logistics_desc':
+        'आपके गेहूं शिपमेंट के लिए परिवहन की व्यवस्था कर दी गई है।\nकल',
 
     'market_overview': 'बाज़ार अवलोकन',
     'live_apmc': 'लाइव APMC',
@@ -202,9 +228,11 @@ class AppLocalizations {
     'what_if_simulator': 'व्हाट-इफ सिम्युलेटर',
     'what_if_simulator_desc': 'होल्ड अवधि बनाम भंडारण शुल्क का परीक्षण करें।',
     'smart_aggregation': 'स्मार्ट एकत्रीकरण',
-    'smart_aggregation_desc': 'बड़े थोक लॉट के लिए पास के किसानों के साथ अपनी फसल मिलाएं',
+    'smart_aggregation_desc':
+        'बड़े थोक लॉट के लिए पास के किसानों के साथ अपनी फसल मिलाएं',
     'intelligent_matching': 'इंटेलिजेंट खरीदार मिलान',
-    'intelligent_matching_desc': 'कीमत, मांग और स्थान के आधार पर अपनी फसल के लिए सर्वोत्तम खरीदार खोजें',
+    'intelligent_matching_desc':
+        'कीमत, मांग और स्थान के आधार पर अपनी फसल के लिए सर्वोत्तम खरीदार खोजें',
     'top_buyer_opportunities': 'शीर्ष खरीदार अवसर',
     'view_all': 'सभी देखें',
 
@@ -214,6 +242,16 @@ class AppLocalizations {
     'recommended_lots': 'अनुशंसित लॉट',
     'recent_transactions': 'हाल के लेन-देन',
     'my_offers': 'मेरे प्रस्ताव',
+    'lot_details': 'लॉट विवरण',
+    'lot_id': 'लॉट आईडी',
+    'available_from': 'उपलब्ध तिथि',
+    'estimated_net_realisable_price': 'अनुमानित शुद्ध प्राप्य मूल्य',
+    'produce_specifications': 'उत्पाद विवरण',
+    'quantity': 'मात्रा',
+    'quality_grade': 'गुणवत्ता ग्रेड',
+    'expected_price': 'अपेक्षित मूल्य',
+    'location': 'स्थान',
+    'view_buyer_offers': 'खरीदारों के प्रस्ताव देखें',
 
     'good_quality': 'अच्छी गुणवत्ता',
     'premium_quality': 'प्रीमियम गुणवत्ता',
@@ -227,44 +265,23 @@ class AppLocalizations {
     'status_delivered': 'वितरित',
     'status_payment_pending': 'भुगतान लंबित',
 
-    'mandi_rate_meerut': 'मेरठ मंडी दर',
-    'trend_today_4_2': '+4.2% आज',
-    'per_quintal_wheat': '/ क्विंटल (गेहूं)',
-    'direct_bids_realization_desc': 'प्रत्यक्ष संयुक्त बोलियों से वर्तमान में ₹120-150/क्विंटल अधिक प्राप्ति होती है।',
-    'market_recommendation_title': 'बाज़ार अनुशंसा',
-    'market_recommendation_desc': 'लाइव मंडी स्थितियों के आधार पर रोकें / बेचें मार्गदर्शन प्राप्त करें',
-    'post_new_produce_lot_title': 'नया उत्पाद लॉट पोस्ट करें',
-    'post_new_produce_lot_desc': 'गुणवत्ता, मात्रा और मांग मूल्य के साथ कटी हुई फसल सूचीबद्ध करें',
-    'my_active_lots_title': 'मेरे सक्रिय लॉट',
-    'my_active_lots_desc': 'सूचीबद्ध फसलें, सक्रिय लॉट देखें और प्रस्ताव प्रबंधित करें',
-    'buyer_demand_board_title': 'खरीदार मांग बोर्ड',
-    'buyer_demand_board_desc': 'खरीदारों द्वारा पोस्ट की गई सक्रिय कमोडिटी आवश्यकताएं देखें',
-    'dispatches_deals_title': 'डिस्पैच और सौदे',
-    'dispatches_deals_desc': 'स्वीकृत सौदे, पिकअप और सीधे भुगतान ट्रैक करें',
-    'intelligent_matching_title': 'इंटेलिजेंट खरीदार मिलान',
-    'intelligent_matching_desc': 'संस्थागत खरीदारों के बीच शुद्ध प्राप्य दरों की तुलना करें',
-    'buyer_demand_label': 'खरीदार मांग',
-    'compare_net_price': 'शुद्ध मूल्य की तुलना करें',
-    'delhi_ncr_distance': 'दिल्ली NCR • 65 किमी दूर',
-    'wheat_demand_500': 'गेहूं • 500 क्विंटल आवश्यक',
-    'net_rate_2520': '₹2,520/क्विंटल शुद्ध',
-    'noida_hub_distance': 'नोएडा हब • 48 किमी दूर',
-    'wheat_demand_200': 'गेहूं • 200 क्विंटल आवश्यक',
-    'net_rate_2490': '₹2,490/क्विंटल शुद्ध',
-
-    'procurement_index': 'खरीद सूचकांक',
-    'active_market': 'सक्रिय बाज़ार',
-    'per_quintal_benchmark_wheat': '/ क्विंटल बेंचमार्क (गेहूं)',
-    'direct_procurement_savings_desc': 'सीधी खरीद से बिचौलियों के मंडी प्रबंधन और कमीशन शुल्क पर 8% तक की बचत होती है।',
-    'post_commodity_demand_title': 'कमोडिटी मांग पोस्ट करें',
-    'active_demands_badge': '{count} सक्रिय',
-    'broadcast_demand_desc': 'अपनी आवश्यक मात्रा, लक्षित मूल्य और डिलीवरी स्थान प्रसारित करें',
-    'browse_farmer_produce_lots': 'किसान उत्पाद लॉट ब्राउज़ करें',
-    'my_submitted_offers_title': 'मेरे प्रस्तुत प्रस्ताव',
-    'my_submitted_offers_desc': 'लंबित बोलियां, स्वीकृत सौदे और किसान के जवाबी प्रस्ताव ट्रैक करें',
-    'direct_farmer_opportunities': 'प्रत्यक्ष किसान अवसर',
-    'no_active_farmer_lots': 'वर्तमान में कोई सक्रिय किसान लॉट सूचीबद्ध नहीं है।',
-    'volume_with_quality': 'मात्रा: {volume} • {quality}',
+    'market_intelligence': 'बाजार जानकारी',
+    'select_commodity': 'उत्पाद चुनें',
+    'select_mandi': 'मंडी चुनें',
+    'market_rate': 'बाजार दर',
+    'live_data': 'लाइव डेटा',
+    'rate_unavailable': 'दर उपलब्ध नहीं है',
+    'no_market_record': '{crop} के लिए {market} पर बाजार का कोई रिकॉर्ड उपलब्ध नहीं है।',
+    'market_recommendation': 'बाजार अनुशंसा',
+    'recommendation_based_on': 'वर्तमान मूल्य परिवर्तन और खरीदारों की मांग के आधार पर',
+    'what_if_price_simulator': 'क्या-अगर मूल्य सिम्युलेटर',
+    'market_assumptions': 'बाजार की धारणाएँ',
+    'recent_mandi_movement': 'हालिया मंडी गतिविधि',
+    'harvest_lot_volume': 'फसल लॉट मात्रा (क्विंटल)',  
+    'cost_assumptions':
+    '• परिवहन: प्रति ढुलाई ₹2,500\n'
+    '• भंडारण (7 दिन रोकें): ₹100/क्विंटल\n'
+    '• भंडारण (15 दिन रोकें): ₹200/क्विंटल',
   };
 
   void _loadBuiltInStrings() {
@@ -278,8 +295,9 @@ class AppLocalizations {
   /// Loads strings from asset JSON files if available, merging them into memory.
   Future<bool> loadJsonAsset() async {
     try {
-      final jsonString = await rootBundle
-          .loadString('assets/lang/${locale.languageCode}.json');
+      final jsonString = await rootBundle.loadString(
+        'assets/lang/${locale.languageCode}.json',
+      );
       final Map<String, dynamic> jsonMap = json.decode(jsonString);
       jsonMap.forEach((key, value) {
         _localizedStrings[key] = value.toString();
