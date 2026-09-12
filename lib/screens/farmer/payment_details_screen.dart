@@ -4,7 +4,47 @@ import '../../localization/language_scope.dart';
 import '../../widgets/language_toggle_button.dart';
 
 class PaymentDetailsScreen extends StatelessWidget {
-  const PaymentDetailsScreen({super.key});
+  /// Values of the deal this screen is showing. They come from the
+  /// transaction row, so the screen no longer displays sample figures.
+  final String transactionId;
+  final String buyerName;
+  final String crop;
+  final String quantity;
+  final String agreedPrice;
+  final String grossValue;
+  final String transportCost;
+  final String finalPayable;
+
+  /// Dispatch status of the transaction ('pickup_scheduled', 'in_transit',
+  /// 'delivered', 'completed'…). Drives the timeline below.
+  final String dispatchStatus;
+
+  const PaymentDetailsScreen({
+    super.key,
+    required this.transactionId,
+    required this.buyerName,
+    required this.crop,
+    required this.quantity,
+    required this.agreedPrice,
+    required this.grossValue,
+    this.transportCost = '',
+    required this.finalPayable,
+    this.dispatchStatus = '',
+  });
+
+  bool get _isDelivered {
+    final status = dispatchStatus.toLowerCase().trim();
+    return status == 'delivered' || status == 'completed' || status == 'paid';
+  }
+
+  bool get _isPaid => dispatchStatus.toLowerCase().trim() == 'paid';
+
+  /// 'KS-TXN-FE840AEF' from a transaction UUID.
+  String get _referenceId {
+    final id = transactionId.replaceAll('-', '');
+    if (id.isEmpty) return 'KS-TXN';
+    return 'KS-TXN-${id.substring(0, id.length < 8 ? id.length : 8).toUpperCase()}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +54,7 @@ class PaymentDetailsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(context.tr('payment_details_title')),
         actions: const [
-          Center(child: LanguageToggleButton(isLightSurface: false)),
+          Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           SizedBox(width: 8),
         ],
       ),
@@ -95,9 +135,9 @@ class PaymentDetailsScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(color: AppColors.outlineVariant),
                           ),
-                          child: const Text(
-                            'KS-TXN-1001',
-                            style: TextStyle(
+                          child: Text(
+                            _referenceId,
+                            style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: AppColors.onSurfaceVariant,
@@ -107,30 +147,32 @@ class PaymentDetailsScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    const _PaymentItemRow(
-                      label: 'Buyer',
-                      value: 'Kisan Agro Flour Mills',
+                    _PaymentItemRow(
+                      label: context.tr('role_buyer'),
+                      value: buyerName,
                     ),
                     const SizedBox(height: 8),
-                    const _PaymentItemRow(
-                      label: 'Produce',
-                      value: 'Wheat • 100 qtl',
+                    _PaymentItemRow(
+                      label: context.tr('payment_produce'),
+                      value: '$crop • $quantity',
                     ),
                     const SizedBox(height: 8),
-                    const _PaymentItemRow(
-                      label: 'Agreed Price',
-                      value: '₹2,470/qtl',
+                    _PaymentItemRow(
+                      label: context.tr('payment_agreed_price'),
+                      value: agreedPrice,
                     ),
                     const SizedBox(height: 8),
-                    const _PaymentItemRow(
-                      label: 'Gross Sale Value',
-                      value: '₹2,47,000',
+                    _PaymentItemRow(
+                      label: context.tr('payment_gross_sale_value'),
+                      value: grossValue,
                     ),
                     const SizedBox(height: 8),
-                    const _PaymentItemRow(
-                      label: 'Transport Cost',
-                      value: '-₹11,000',
-                      isDeduction: true,
+                    _PaymentItemRow(
+                      label: context.tr('payment_transport_cost'),
+                      value: transportCost.isEmpty
+                          ? context.tr('payment_transport_pending')
+                          : '-$transportCost',
+                      isDeduction: transportCost.isNotEmpty,
                     ),
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 10),
@@ -147,7 +189,7 @@ class PaymentDetailsScreen extends StatelessWidget {
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
+                        children: [
                           Text(
                             context.tr('final_payable_amount'),
                             style: TextStyle(
@@ -157,7 +199,7 @@ class PaymentDetailsScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '₹2,36,000',
+                            finalPayable,
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
@@ -168,9 +210,9 @@ class PaymentDetailsScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    const _PaymentItemRow(
-                      label: 'Payment Method',
-                      value: 'Direct Bank Transfer',
+                    _PaymentItemRow(
+                      label: context.tr('payment_method_label'),
+                      value: context.tr('payment_method_bank_transfer'),
                     ),
                   ],
                 ),
@@ -191,24 +233,34 @@ class PaymentDetailsScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const _TimelineTile(
+                    _TimelineTile(
                       stepNumber: 1,
-                      title: 'Delivery Verified',
-                      isCompleted: true,
+                      title: context.tr('payment_step_delivery_verified'),
+                      isCompleted: _isDelivered,
                       isLast: false,
                     ),
-                    const _TimelineTile(
+                    _TimelineTile(
                       stepNumber: 2,
-                      title: 'Payment Initiated',
-                      isCompleted: false,
+                      title: context.tr('payment_step_initiated'),
+                      isCompleted: _isDelivered,
                       isLast: false,
                     ),
-                    const _TimelineTile(
+                    _TimelineTile(
                       stepNumber: 3,
-                      title: 'Payment Received',
-                      isCompleted: false,
+                      title: context.tr('payment_step_received'),
+                      isCompleted: _isPaid,
                       isLast: true,
                     ),
+                    if (!_isDelivered) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        context.tr('payment_awaiting_delivery'),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontSize: 12,
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -358,7 +410,9 @@ class _TimelineTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  isCompleted ? 'Completed' : 'Pending',
+                  isCompleted
+                      ? context.tr('status_completed')
+                      : context.tr('status_pending'),
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,

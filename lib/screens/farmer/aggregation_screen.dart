@@ -59,7 +59,7 @@ class _AggregationScreenState extends State<AggregationScreen> {
   void _onCreateLotPressed() {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text(context.tr('msg_aggregated_lot_success')),
         duration: Duration(seconds: 2),
       ),
@@ -74,7 +74,7 @@ class _AggregationScreenState extends State<AggregationScreen> {
       appBar: AppBar(
         title: Text(context.tr('smart_aggregation_title')),
         actions: const [
-          Center(child: LanguageToggleButton(isLightSurface: false)),
+          Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           SizedBox(width: 8),
         ],
       ),

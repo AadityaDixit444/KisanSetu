@@ -89,7 +89,7 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
       appBar: AppBar(
         title: Text(context.tr('buyer_demand_board_title')),
         actions: [
-          const Center(child: LanguageToggleButton(isLightSurface: false)),
+          const Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: context.tr('refresh_demands'),
@@ -267,7 +267,7 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
                                               ),
                                             );
                                           },
-                                          child: const Text(
+                                          child: Text(
                                             context.tr('respond_to_demand_btn'),
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,

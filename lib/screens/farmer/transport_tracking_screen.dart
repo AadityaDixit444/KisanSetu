@@ -64,7 +64,7 @@ class TransportTrackingScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(context.tr('transport_tracking_title')),
         actions: const [
-          Center(child: LanguageToggleButton(isLightSurface: false)),
+          Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           SizedBox(width: 8),
         ],
       ),
@@ -462,7 +462,9 @@ class _TimelineStepTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  isCompleted ? 'Completed' : 'Pending',
+                  isCompleted
+                      ? context.tr('status_completed')
+                      : context.tr('status_pending'),
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,

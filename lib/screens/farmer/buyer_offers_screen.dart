@@ -283,7 +283,7 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
       appBar: AppBar(
         title: Text(context.tr('buyer_offers_title')),
         actions: const [
-          Center(child: LanguageToggleButton(isLightSurface: false)),
+          Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           SizedBox(width: 8),
         ],
       ),
@@ -495,15 +495,15 @@ class _BuyerOffersScreenState extends State<BuyerOffersScreen> {
                                       isHighlighted: true,
                                     ),
                                     const SizedBox(height: 6),
-                                    const _OfferSpecRow(
+                                    _OfferSpecRow(
                                       label: 'Est. Logistics Cost',
-                                      value: 'Not calculated',
+                                      value: context.tr('not_calculated'),
                                       icon: Icons.local_shipping_outlined,
                                     ),
                                     const SizedBox(height: 6),
-                                    const _OfferSpecRow(
+                                    _OfferSpecRow(
                                       label: 'Net Realisable Price',
-                                      value: 'Not calculated',
+                                      value: context.tr('not_calculated'),
                                       icon: Icons.account_balance_wallet_outlined,
                                       isHighlighted: true,
                                     ),

@@ -112,7 +112,7 @@ class _LotsScreenState extends State<LotsScreen> {
         ),
         title: Text(context.tr('my_produce_lots_title')),
         actions: [
-          const Center(child: LanguageToggleButton(isLightSurface: false)),
+          const Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: context.tr('refresh_tooltip'),

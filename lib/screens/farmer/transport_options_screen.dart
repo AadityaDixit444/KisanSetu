@@ -86,7 +86,7 @@ class _TransportOptionsScreenState extends State<TransportOptionsScreen> {
 
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(context.tr('transport_arranged_success')),
           duration: Duration(seconds: 2),
         ),
@@ -130,7 +130,7 @@ class _TransportOptionsScreenState extends State<TransportOptionsScreen> {
       appBar: AppBar(
         title: Text(context.tr('transport_options_title')),
         actions: const [
-          Center(child: LanguageToggleButton(isLightSurface: false)),
+          Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           SizedBox(width: 8),
         ],
       ),
@@ -252,7 +252,7 @@ class _TransportOptionsScreenState extends State<TransportOptionsScreen> {
                                   color: AppColors.primary,
                                   borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   context.tr('best_fit_badge'),
                                   style: TextStyle(
                                     fontSize: 11,

@@ -24,7 +24,7 @@ class ConfirmDealScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(context.tr('confirm_deal_btn')),
         actions: const [
-          Center(child: LanguageToggleButton(isLightSurface: false)),
+          Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           SizedBox(width: 8),
         ],
       ),
@@ -143,7 +143,7 @@ class ConfirmDealScreen extends StatelessWidget {
                             color: AppColors.primaryContainer,
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Text(
+                          child: Text(
                             '${context.tr("crop_wheat")} • 100 qtl',
                             style: TextStyle(
                               fontSize: 12,
@@ -189,7 +189,7 @@ class ConfirmDealScreen extends StatelessWidget {
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
+                        children: [
                           Text(
                             context.tr('estimated_total_value'),
                             style: TextStyle(
@@ -223,7 +223,7 @@ class ConfirmDealScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      children: const [
+                      children: [
                         Icon(
                           Icons.info_outline_rounded,
                           size: 20,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../localization/language_scope.dart';
+import '../services/auth_service.dart';
 import '../theme/app_colors.dart';
+import '../widgets/sign_out_button.dart';
 import '../widgets/language_toggle_button.dart';
 import 'notifications_screen.dart';
 import 'farmer/buyer_offers_screen.dart';
@@ -20,17 +22,21 @@ class FarmerDashboard extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        // Root screen after sign-in: no back arrow, sign out instead.
+        automaticallyImplyLeading: false,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              context.tr('greeting_morning'),
+              context.tr('auth_welcome_back'),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: AppColors.onPrimary.withValues(alpha: 0.85),
               ),
             ),
             Text(
-              context.tr('role_farmer'),
+              AuthService.safeDisplayName() ?? context.tr('role_farmer'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
@@ -40,8 +46,10 @@ class FarmerDashboard extends StatelessWidget {
         ),
         actions: [
           const Center(
+            widthFactor: 1,
             child: LanguageToggleButton(isLightSurface: false),
           ),
+          const SignOutButton(),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             tooltip: context.tr('notifications_title'),

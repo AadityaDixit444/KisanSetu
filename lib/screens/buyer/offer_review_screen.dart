@@ -39,6 +39,25 @@ class _OfferReviewScreenState extends State<OfferReviewScreen> {
     return double.tryParse(val.toString().replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
   }
 
+  /// '40' or '40 qtl' -> '40 qtl'
+  String _formatQuantity(String value) {
+    final qty = _parseDouble(value.replaceAll(RegExp(r'[^0-9.]'), ''));
+    final text = qty % 1 == 0 ? qty.toInt().toString() : qty.toString();
+    return '$text qtl';
+  }
+
+  /// '2500' or '₹2,500/qtl' -> '₹2,500/qtl'
+  String _formatPrice(String value) {
+    final price = _parseDouble(value.replaceAll(RegExp(r'[^0-9.]'), ''));
+    final whole =
+        price % 1 == 0 ? price.toInt().toString() : price.toStringAsFixed(2);
+    final grouped = whole.replaceAllMapped(
+      RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'),
+      (m) => '${m[1]},',
+    );
+    return '₹$grouped/qtl';
+  }
+
   String _formatCurrency(double amount) {
     return '₹${amount.toStringAsFixed(0).replaceAllMapped(
           RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'),
@@ -114,7 +133,7 @@ class _OfferReviewScreenState extends State<OfferReviewScreen> {
       appBar: AppBar(
         title: Text(context.tr('review_offer_title')),
         actions: const [
-          Center(child: LanguageToggleButton(isLightSurface: false)),
+          Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           SizedBox(width: 8),
         ],
       ),
@@ -159,19 +178,19 @@ class _OfferReviewScreenState extends State<OfferReviewScreen> {
                           const Divider(height: 24, color: AppColors.outlineVariant),
                           _DetailRow(
                             label: context.tr('offered_unit_price'),
-                            value: '₹${widget.offerPrice}/qtl',
+                            value: _formatPrice(widget.offerPrice),
                             isBold: true,
                             valueColor: AppColors.primary,
                           ),
                           const SizedBox(height: 10),
                           _DetailRow(
                             label: context.tr('offered_volume'),
-                            value: '${widget.quantity} qtl',
+                            value: _formatQuantity(widget.quantity),
                           ),
                           const SizedBox(height: 10),
                           _DetailRow(
                             label: context.tr('farmer_asking_price'),
-                            value: '₹${widget.askingPrice}/qtl',
+                            value: _formatPrice(widget.askingPrice),
                           ),
                           const SizedBox(height: 10),
                           _DetailRow(

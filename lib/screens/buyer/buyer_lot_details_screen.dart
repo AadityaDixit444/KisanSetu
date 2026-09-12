@@ -47,7 +47,7 @@ class BuyerLotDetailsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(context.tr('lot_details_title')),
         actions: const [
-          Center(child: LanguageToggleButton(isLightSurface: false)),
+          Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           SizedBox(width: 8),
         ],
       ),
@@ -132,12 +132,16 @@ class BuyerLotDetailsScreen extends StatelessWidget {
                             label: context.tr('produce_location'),
                             value: location,
                           ),
-                          const SizedBox(height: 12),
-                          _DetailRow(
-                            icon: Icons.route_rounded,
-                            label: context.tr('lot_distance'),
-                            value: distance?.toString() ?? '',
-                          ),
+                          // Distance is not known for every lot; skip the row
+                          // instead of showing a blank value.
+                          if ((distance?.toString() ?? '').trim().isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            _DetailRow(
+                              icon: Icons.route_rounded,
+                              label: context.tr('lot_distance'),
+                              value: distance!.toString(),
+                            ),
+                          ],
                         ],
                       ),
                     ),

@@ -6,6 +6,35 @@ import 'buyer_dashboard.dart';
 import 'my_offers_screen.dart';
 
 class OfferSubmittedScreen extends StatelessWidget {
+
+  /// '40' or '40 qtl' -> '40 qtl'
+  static String _formatQuantity(String value) {
+    final qty = double.tryParse(value.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+    final text = qty % 1 == 0 ? qty.toInt().toString() : qty.toString();
+    return '$text qtl';
+  }
+
+  /// '2450' or '₹2,450/qtl' -> '₹2,450/qtl'
+  static String _formatPrice(String value) {
+    final price =
+        double.tryParse(value.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+    final whole =
+        price % 1 == 0 ? price.toInt().toString() : price.toStringAsFixed(2);
+    final grouped = whole.replaceAllMapped(
+      RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'),
+      (m) => '${m[1]},',
+    );
+    return '₹$grouped/qtl';
+  }
+
+  /// 'LOT-50D956F8' from a lot UUID, matching the My Lots screen.
+  static String _shortLotId(String rawId) {
+    if (rawId.isEmpty) return 'LOT-N/A';
+    final id = rawId.replaceAll('-', '');
+    if (id.length >= 8) return 'LOT-${id.substring(0, 8).toUpperCase()}';
+    return 'LOT-${id.toUpperCase()}';
+  }
+
   final String lotId;
   final String crop;
   final String quantity;
@@ -99,11 +128,21 @@ class OfferSubmittedScreen extends StatelessWidget {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Text(
-                              context.trWithArgs('lot_id_prefix', {'id': lotId}),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: AppColors.onSurfaceVariant,
-                                fontWeight: FontWeight.w600,
+                            // A full lot UUID does not fit next to the crop
+                            // name; show the short form used on My Lots.
+                            Flexible(
+                              child: Text(
+                                context.trWithArgs(
+                                  'lot_id_prefix',
+                                  {'id': _shortLotId(lotId)},
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.end,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: AppColors.onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],
@@ -111,12 +150,12 @@ class OfferSubmittedScreen extends StatelessWidget {
                         const Divider(height: 24, color: AppColors.outlineVariant),
                         _SummaryRow(
                           label: context.tr('lot_quantity'),
-                          value: quantity.contains('qtl') ? quantity : '$quantity qtl',
+                          value: _formatQuantity(quantity),
                         ),
                         const SizedBox(height: 8),
                         _SummaryRow(
                           label: context.tr('offered_price_label'),
-                          value: offerPrice.contains('/qtl') ? offerPrice : '₹$offerPrice/qtl',
+                          value: _formatPrice(offerPrice),
                         ),
                         const SizedBox(height: 8),
                         _SummaryRow(

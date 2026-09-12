@@ -278,7 +278,7 @@ class _MarketScreenState extends State<MarketScreen> {
         ),
         title: Text(context.tr('market_intelligence_title')),
         actions: [
-          const Center(child: LanguageToggleButton(isLightSurface: false)),
+          const Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: context.tr('refresh_tooltip'),
@@ -410,7 +410,7 @@ class _MarketScreenState extends State<MarketScreen> {
                               color: AppColors.primaryContainer,
                               borderRadius: BorderRadius.circular(7),
                             ),
-                            child: const Text(
+                            child: Text(
                               context.tr('live_data_badge'),
                               style: TextStyle(
                                 fontSize: 11,
