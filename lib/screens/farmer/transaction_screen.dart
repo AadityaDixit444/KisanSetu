@@ -171,7 +171,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
         ),
         title: Text(context.tr('transactions_dispatches_title')),
         actions: [
-          const Center(child: LanguageToggleButton(isLightSurface: false)),
+          const Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: context.tr('refresh_tooltip'),
@@ -260,6 +260,25 @@ class _TransactionScreenState extends State<TransactionScreen> {
                                 tx['status']?.toString() ??
                                 'ready_for_dispatch';
                             final statusDisplay = dispatchStatus.replaceAll('_', ' ').toUpperCase();
+
+                            final buyerProfile =
+                                tx['profiles'] as Map<String, dynamic>? ?? {};
+                            final buyerName =
+                                buyerProfile['name']?.toString().trim().isNotEmpty ==
+                                        true
+                                    ? buyerProfile['name'].toString()
+                                    : context.tr('role_buyer');
+
+                            // Transport cost is only known once logistics are
+                            // arranged; until then the payment screen says so.
+                            final transportRaw = tx['transport_cost'];
+                            final transportCostLabel = transportRaw == null
+                                ? ''
+                                : _formatCurrency(transportRaw);
+                            final finalPayableLabel = transportRaw == null
+                                ? totalAmount
+                                : _formatCurrency(_parseDouble(tx['total_amount']) -
+                                    _parseDouble(transportRaw));
 
                             final location = lotData['location']?.toString() ?? 'Not specified';
                             final quality = lotData['quality']?.toString() ?? 'Standard';
@@ -363,7 +382,21 @@ class _TransactionScreenState extends State<TransactionScreen> {
                                               Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                  builder: (context) => const PaymentDetailsScreen(),
+                                                  builder: (context) =>
+                                                      PaymentDetailsScreen(
+                                                    transactionId: txId,
+                                                    buyerName: buyerName,
+                                                    crop: crop,
+                                                    quantity: quantity,
+                                                    agreedPrice: agreedPrice,
+                                                    grossValue: totalAmount,
+                                                    transportCost:
+                                                        transportCostLabel,
+                                                    finalPayable:
+                                                        finalPayableLabel,
+                                                    dispatchStatus:
+                                                        dispatchStatus,
+                                                  ),
                                                 ),
                                               );
                                             },

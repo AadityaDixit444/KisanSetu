@@ -115,7 +115,7 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
       appBar: AppBar(
         title: Text(context.tr('logistics_fulfillment_title')),
         actions: const [
-          Center(child: LanguageToggleButton(isLightSurface: false)),
+          Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           SizedBox(width: 8),
         ],
       ),
@@ -351,10 +351,10 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
                                             iconColor: AppColors.tertiary,
                                           ),
                                           const Divider(height: 24, color: AppColors.outlineVariant),
-                                          const _LogisticsRow(
+                                          _LogisticsRow(
                                             icon: Icons.straighten_outlined,
                                             label: 'Calculated Distance',
-                                            value: 'Not calculated',
+                                            value: context.tr('not_calculated'),
                                           ),
                                         ],
                                       ),

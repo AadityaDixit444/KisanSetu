@@ -129,7 +129,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         ),
         title: Text(context.tr('market_advisory_title')),
         actions: [
-          const Center(child: LanguageToggleButton(isLightSurface: false)),
+          const Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: context.tr('refresh_tooltip'),

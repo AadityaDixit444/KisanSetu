@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/lot_service.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/voice_text_field.dart';
 import '../../localization/language_scope.dart';
 import '../../widgets/language_toggle_button.dart';
 
@@ -73,7 +74,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(context.tr('produce_lot_listed_success')),
           backgroundColor: AppColors.primary,
         ),
@@ -105,7 +106,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
       appBar: AppBar(
         title: Text(context.tr('list_produce_lot_title')),
         actions: const [
-          Center(child: LanguageToggleButton(isLightSurface: false)),
+          Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           SizedBox(width: 8),
         ],
       ),
@@ -133,7 +134,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
                             const Divider(height: 24, color: AppColors.outlineVariant),
                             DropdownButtonFormField<String>(
                               value: _selectedCrop,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: context.tr('commodity_crop'),
                                 prefixIcon: Icon(Icons.agriculture_rounded),
                               ),
@@ -155,7 +156,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
                             TextFormField(
                               controller: _quantityController,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: context.tr('available_volume_quintals'),
                                 prefixIcon: Icon(Icons.scale_rounded),
                               ),
@@ -173,7 +174,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
                             const SizedBox(height: 14),
                             DropdownButtonFormField<String>(
                               value: _selectedQuality,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: context.tr('quality_grade_standard'),
                                 prefixIcon: Icon(Icons.verified_outlined),
                               ),
@@ -195,7 +196,7 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
                             TextFormField(
                               controller: _askingPriceController,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: context.tr('farmer_asking_rate'),
                                 prefixIcon: Icon(Icons.currency_rupee_rounded),
                               ),
@@ -211,9 +212,10 @@ class _CreateLotScreenState extends State<CreateLotScreen> {
                               },
                             ),
                             const SizedBox(height: 14),
-                            TextFormField(
+                            // Mic button: speak the location (Hindi or English)
+                            VoiceTextField(
                               controller: _locationController,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: context.tr('farm_warehouse_depot'),
                                 prefixIcon: Icon(Icons.location_on_outlined),
                                 hintText: context.tr('hint_farm_warehouse'),

@@ -103,7 +103,7 @@ class _BrowseLotsScreenState extends State<BrowseLotsScreen> {
       appBar: AppBar(
         title: Text(context.tr('browse_lots_title')),
         actions: const [
-          Center(child: LanguageToggleButton(isLightSurface: false)),
+          Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           SizedBox(width: 8),
         ],
       ),

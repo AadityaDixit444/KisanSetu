@@ -139,7 +139,8 @@ class TransactionService {
     try {
       final response = await _supabase
           .from('transactions')
-          .select('*, lots(*)')
+          // profiles join: lets the UI show who the buyer is instead of an id
+          .select('*, lots(*), profiles:buyer_id(name, location)')
           .eq('farmer_id', user.id)
           .order('created_at', ascending: false);
 

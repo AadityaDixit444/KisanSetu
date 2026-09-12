@@ -187,7 +187,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
         ),
         title: Text(context.tr('what_if_simulator_title')),
         actions: [
-          const Center(child: LanguageToggleButton(isLightSurface: false)),
+          const Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: context.tr('refresh_tooltip'),
@@ -264,7 +264,7 @@ class _SimulatorScreenState extends State<SimulatorScreen> {
                         controller: _quantityController,
                         keyboardType:
                             const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           hintText: context.tr('enter_quantity_in_qtl'),
                           suffixText: 'qtl',
                           prefixIcon: Icon(Icons.scale_rounded),

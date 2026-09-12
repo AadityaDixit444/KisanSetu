@@ -57,6 +57,26 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
     return value.replaceAll(RegExp(r'[^0-9.]'), '');
   }
 
+  /// '40' or '40 qtl' -> '40 qtl'
+  String _formatQuantity(String value) {
+    final qty = _parseDouble(_sanitizeNumeric(value));
+    final text = qty % 1 == 0 ? qty.toInt().toString() : qty.toString();
+    return '$text qtl';
+  }
+
+  /// '2500' or '₹2,500/qtl' -> '₹2,500/qtl'
+  String _formatPrice(String value) {
+    final price = _parseDouble(_sanitizeNumeric(value.replaceAll(',', '')));
+    final whole = price % 1 == 0
+        ? price.toInt().toString()
+        : price.toStringAsFixed(2);
+    final grouped = whole.replaceAllMapped(
+      RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?'),
+      (m) => '${m[1]},',
+    );
+    return '₹$grouped/qtl';
+  }
+
   double _parseDouble(dynamic val) {
     if (val == null) return 0.0;
     if (val is num) return val.toDouble();
@@ -101,12 +121,16 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final availableQuantity = _parseDouble(_sanitizeNumeric(widget.quantity));
+    // Callers pass either a raw number or a string that already carries its
+    // unit, so strip first and add the unit exactly once.
+    final quantityLabel = _formatQuantity(widget.quantity);
+    final askingPriceLabel = _formatPrice(widget.askingPrice);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(context.tr('make_offer_title')),
         actions: const [
-          Center(child: LanguageToggleButton(isLightSurface: false)),
+          Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           SizedBox(width: 8),
         ],
       ),
@@ -153,9 +177,9 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
                               ],
                             ),
                             const Divider(height: 20, color: AppColors.outlineVariant),
-                            _LotInfoRow(label: context.tr('available_quantity'), value: '${widget.quantity} qtl'),
+                            _LotInfoRow(label: context.tr('available_quantity'), value: quantityLabel),
                             const SizedBox(height: 6),
-                            _LotInfoRow(label: context.tr('farmer_asking_price'), value: '₹${widget.askingPrice}/qtl'),
+                            _LotInfoRow(label: context.tr('farmer_asking_price'), value: askingPriceLabel),
                             const SizedBox(height: 6),
                             _LotInfoRow(label: context.tr('produce_location'), value: widget.location),
                           ],
@@ -182,7 +206,7 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
                             TextFormField(
                               controller: _offerPriceController,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: context.tr('offered_price_label'),
                                 prefixIcon: Icon(Icons.currency_rupee_rounded),
                               ),
@@ -203,7 +227,7 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               decoration: InputDecoration(
                                 labelText: context.tr('offered_quantity_label'),
-                                helperText: context.trWithArgs('max_available_helper', {'qty': '${widget.quantity} qtl'}),
+                                helperText: context.trWithArgs('max_available_helper', {'qty': quantityLabel}),
                                 prefixIcon: const Icon(Icons.scale_rounded),
                               ),
                               validator: (value) {
@@ -215,7 +239,7 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
                                   return context.tr('err_valid_qty');
                                 }
                                 if (val > availableQuantity) {
-                                  return context.trWithArgs('err_cannot_exceed_qty', {'qty': '${widget.quantity} qtl'});
+                                  return context.trWithArgs('err_cannot_exceed_qty', {'qty': _formatQuantity(widget.quantity)});
                                 }
                                 return null;
                               },

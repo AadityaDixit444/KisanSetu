@@ -80,7 +80,7 @@ class AppLocalizations {
     'confirm_and_submit_offer': 'Confirm & Submit Offer',
     'confirm_deal_btn': 'Confirm Deal',
     'continue_to_make_offer': 'Continue to Make Offer',
-    'costs_breakdown_text': '• Transport: ₹2,500 flat per haulage\\n• Storage (Hold 7d): ₹100/quintal\\n• Storage (Hold 15d): ₹200/quintal',
+    'costs_breakdown_text': '• Transport: ₹2,500 flat per haulage\n• Storage (Hold 7d): ₹100/quintal\n• Storage (Hold 15d): ₹200/quintal',
     'create_aggregated_lot_btn': 'Create Aggregated Lot',
     'create_new_lot': 'Create New Lot',
     'create_new_lot_desc': 'List your crop and connect with buyers',
@@ -274,9 +274,9 @@ class AppLocalizations {
     'produce_location': 'Produce Location',
     'produce_lot_listed_success': 'Produce lot listed successfully!',
     'produce_specifications': 'Produce Specifications',
-    'purchase_sub_1': 'Farmer Location: Meerut\\nAgreed Price: ₹2,450/qtl\\nTotal Value: ₹2,45,000',
-    'purchase_sub_2': 'Farmer Location: Muzaffarnagar\\nAgreed Price: ₹2,460/qtl\\nTotal Value: ₹3,69,000',
-    'purchase_sub_3': 'Farmer Location: Hapur\\nAgreed Price: ₹3,050/qtl\\nTotal Value: ₹2,44,000',
+    'purchase_sub_1': 'Farmer Location: Meerut\nAgreed Price: ₹2,450/qtl\nTotal Value: ₹2,45,000',
+    'purchase_sub_2': 'Farmer Location: Muzaffarnagar\nAgreed Price: ₹2,460/qtl\nTotal Value: ₹3,69,000',
+    'purchase_sub_3': 'Farmer Location: Hapur\nAgreed Price: ₹3,050/qtl\nTotal Value: ₹2,44,000',
     'qty_quality_summary': 'Quantity: {qty} • Quality: {quality}',
     'quality_faq': 'Fair Average Quality (FAQ)',
     'quality_grade': 'Quality Grade',
@@ -379,6 +379,80 @@ class AppLocalizations {
     'yields_highest_nrv': 'Yields the highest estimated net realisable value for {qty} qtl.',
     'your_matching_lots': 'Your Matching Lots',
     'your_offer_label': 'Your Offer: ',
+    // --- Added: intro / auth / voice input ---
+    'intro_headline': 'Know the market.\nSell smarter.',
+    'intro_sub': 'Live mandi rates, direct buyers and clear SELL / HOLD guidance — in one simple app.',
+    'intro_feature_rates': 'Live mandi rates',
+    'intro_feature_rates_desc': 'Prices and trends from nearby markets',
+    'intro_feature_buyers': 'Direct buyers',
+    'intro_feature_buyers_desc': 'Post a lot, receive offers, no middlemen',
+    'intro_feature_guidance': 'Sell or hold?',
+    'intro_feature_guidance_desc': 'Simple recommendations based on market conditions',
+    'intro_get_started': 'Get Started',
+    'intro_have_account': 'I already have an account',
+    'auth_sign_in_title': 'Sign In',
+    'auth_sign_in_sub': 'Welcome back. Enter your details to continue.',
+    'auth_create_account_title': 'Create Account',
+    'auth_create_account_sub': 'A few details and you are ready to go.',
+    'auth_full_name': 'Full Name',
+    'auth_full_name_hint': 'e.g., Ramesh Kumar',
+    'auth_email': 'Email',
+    'auth_email_hint': 'you@example.com',
+    'auth_password': 'Password',
+    'auth_password_hint': 'At least 6 characters',
+    'auth_sign_in_btn': 'Sign In',
+    'auth_sign_up_btn': 'Create Account',
+    'auth_no_account': 'New here?',
+    'auth_sign_up_link': 'Create an account',
+    'auth_have_account': 'Already have an account?',
+    'auth_sign_in_link': 'Sign in',
+    'auth_show_password': 'Show password',
+    'auth_hide_password': 'Hide password',
+    'auth_sign_out': 'Sign Out',
+    'auth_sign_out_confirm': 'Sign out of KisanSetu?',
+    'auth_check_email_title': 'Confirm your email',
+    'auth_check_email_body': 'We sent a confirmation link to your email. Open it, then sign in.',
+    'auth_welcome_back': 'Welcome back,',
+    'common_cancel': 'Cancel',
+    'common_ok': 'OK',
+    'auth_err_name_required': 'Enter your name',
+    'auth_err_email_required': 'Enter your email',
+    'auth_err_email_invalid': 'Enter a valid email',
+    'auth_err_password_required': 'Enter your password',
+    'auth_err_password_short': 'Password must be at least 6 characters',
+    'auth_err_invalid_credentials': 'Incorrect email or password',
+    'auth_err_email_not_confirmed': 'Please confirm your email first, then sign in',
+    'auth_err_user_exists': 'An account with this email already exists',
+    'auth_err_not_signed_in': 'Please sign in first.',
+    'auth_err_generic': 'Something went wrong. Please try again.',
+    'voice_tap_to_speak': 'Tap the mic and speak',
+    'voice_listening': 'Listening…',
+    'voice_translating': 'Translating…',
+    'voice_downloading': 'Downloading language pack (one time)…',
+    'voice_heard': 'Heard',
+    'voice_unavailable': 'Voice input is not available on this device',
+    'voice_permission_denied': 'Microphone permission was denied',
+    'voice_nothing_heard': 'Nothing heard. Try again.',
+    'voice_translate_unavailable': 'Translation works only on Android / iOS. Showing Hindi text.',
+
+    'payment_produce': 'Produce',
+    'payment_agreed_price': 'Agreed Price',
+    'payment_gross_sale_value': 'Gross Sale Value',
+    'payment_transport_cost': 'Transport Cost',
+    'payment_method_label': 'Payment Method',
+    'payment_method_bank_transfer': 'Direct Bank Transfer',
+    'payment_transport_pending': 'Not arranged yet',
+
+    'payment_step_delivery_verified': 'Delivery Verified',
+    'payment_step_initiated': 'Payment Initiated',
+    'payment_step_received': 'Payment Received',
+    'payment_awaiting_delivery': 'Payment starts once the produce is delivered and verified.',
+
+    'not_arranged': 'Not arranged',
+    'not_scheduled': 'Not scheduled',
+    'not_calculated': 'Not calculated',
+    'not_specified': 'Not specified',
+
   };
 
   static const Map<String, String> _hiStrings = {
@@ -436,7 +510,7 @@ class AppLocalizations {
     'confirm_and_submit_offer': 'पुष्टि करें और प्रस्ताव जमा करें',
     'confirm_deal_btn': 'सौदा पक्का करें',
     'continue_to_make_offer': 'प्रस्ताव देने के लिए आगे बढ़ें',
-    'costs_breakdown_text': '• परिवहन: ₹2,500 प्रति ढुलाई\\n• भंडारण (7 दिन रोकें): ₹100/क्विंटल\\n• भंडारण (15 दिन रोकें): ₹200/क्विंटल',
+    'costs_breakdown_text': '• परिवहन: ₹2,500 प्रति ढुलाई\n• भंडारण (7 दिन रोकें): ₹100/क्विंटल\n• भंडारण (15 दिन रोकें): ₹200/क्विंटल',
     'create_aggregated_lot_btn': 'एकत्रित लॉट बनाएं',
     'create_new_lot': 'नया लॉट बनाएं',
     'create_new_lot_desc': 'अपनी फसल सूचीबद्ध करें और खरीदारों से जुड़ें',
@@ -630,9 +704,9 @@ class AppLocalizations {
     'produce_location': 'उपज का स्थान',
     'produce_lot_listed_success': 'उपज लॉट सफलतापूर्वक सूचीबद्ध किया गया!',
     'produce_specifications': 'उपज विनिर्देश',
-    'purchase_sub_1': 'किसान का स्थान: मेरठ\\nसहमति मूल्य: ₹2,450/क्विंटल\\nकुल मूल्य: ₹2,45,000',
-    'purchase_sub_2': 'किसान का स्थान: मुज़फ्फरनगर\\nसहमति मूल्य: ₹2,460/क्विंटल\\nकुल मूल्य: ₹3,69,000',
-    'purchase_sub_3': 'किसान का स्थान: हापुड़\\nसहमति मूल्य: ₹3,050/क्विंटल\\nकुल मूल्य: ₹2,44,000',
+    'purchase_sub_1': 'किसान का स्थान: मेरठ\nसहमति मूल्य: ₹2,450/क्विंटल\nकुल मूल्य: ₹2,45,000',
+    'purchase_sub_2': 'किसान का स्थान: मुज़फ्फरनगर\nसहमति मूल्य: ₹2,460/क्विंटल\nकुल मूल्य: ₹3,69,000',
+    'purchase_sub_3': 'किसान का स्थान: हापुड़\nसहमति मूल्य: ₹3,050/क्विंटल\nकुल मूल्य: ₹2,44,000',
     'qty_quality_summary': 'मात्रा: {qty} • गुणवत्ता: {quality}',
     'quality_faq': 'उचित औसत गुणवत्ता (FAQ)',
     'quality_grade': 'गुणवत्ता ग्रेड',
@@ -735,6 +809,80 @@ class AppLocalizations {
     'yields_highest_nrv': '{qty} क्विंटल के लिए उच्चतम अनुमानित शुद्ध वसूली मूल्य प्राप्त होता है।',
     'your_matching_lots': 'आपके मेल खाने वाले लॉट',
     'your_offer_label': 'आपका प्रस्ताव: ',
+    // --- Added: intro / auth / voice input ---
+    'intro_headline': 'बाज़ार जानिए।\nसमझदारी से बेचिए।',
+    'intro_sub': 'लाइव मंडी भाव, सीधे खरीदार और साफ़ बेचें / रोकें सलाह — एक आसान ऐप में।',
+    'intro_feature_rates': 'लाइव मंडी भाव',
+    'intro_feature_rates_desc': 'आस-पास की मंडियों के भाव और रुझान',
+    'intro_feature_buyers': 'सीधे खरीदार',
+    'intro_feature_buyers_desc': 'लॉट डालें, ऑफ़र पाएँ, बिना बिचौलिये',
+    'intro_feature_guidance': 'बेचें या रोकें?',
+    'intro_feature_guidance_desc': 'बाज़ार की स्थिति पर आधारित आसान सलाह',
+    'intro_get_started': 'शुरू करें',
+    'intro_have_account': 'मेरा खाता पहले से है',
+    'auth_sign_in_title': 'साइन इन',
+    'auth_sign_in_sub': 'वापसी पर स्वागत है। जारी रखने के लिए विवरण भरें।',
+    'auth_create_account_title': 'खाता बनाएँ',
+    'auth_create_account_sub': 'कुछ विवरण और आप तैयार हैं।',
+    'auth_full_name': 'पूरा नाम',
+    'auth_full_name_hint': 'जैसे, रमेश कुमार',
+    'auth_email': 'ईमेल',
+    'auth_email_hint': 'aap@example.com',
+    'auth_password': 'पासवर्ड',
+    'auth_password_hint': 'कम से कम 6 अक्षर',
+    'auth_sign_in_btn': 'साइन इन करें',
+    'auth_sign_up_btn': 'खाता बनाएँ',
+    'auth_no_account': 'नए हैं?',
+    'auth_sign_up_link': 'खाता बनाएँ',
+    'auth_have_account': 'खाता पहले से है?',
+    'auth_sign_in_link': 'साइन इन',
+    'auth_show_password': 'पासवर्ड दिखाएँ',
+    'auth_hide_password': 'पासवर्ड छिपाएँ',
+    'auth_sign_out': 'साइन आउट',
+    'auth_sign_out_confirm': 'किसानसेतु से साइन आउट करें?',
+    'auth_check_email_title': 'अपना ईमेल पुष्टि करें',
+    'auth_check_email_body': 'हमने आपके ईमेल पर पुष्टि लिंक भेजा है। उसे खोलें, फिर साइन इन करें।',
+    'auth_welcome_back': 'वापसी पर स्वागत है,',
+    'common_cancel': 'रद्द करें',
+    'common_ok': 'ठीक है',
+    'auth_err_name_required': 'अपना नाम लिखें',
+    'auth_err_email_required': 'अपना ईमेल लिखें',
+    'auth_err_email_invalid': 'सही ईमेल लिखें',
+    'auth_err_password_required': 'अपना पासवर्ड लिखें',
+    'auth_err_password_short': 'पासवर्ड कम से कम 6 अक्षर का हो',
+    'auth_err_invalid_credentials': 'ईमेल या पासवर्ड गलत है',
+    'auth_err_email_not_confirmed': 'पहले अपना ईमेल पुष्टि करें, फिर साइन इन करें',
+    'auth_err_user_exists': 'इस ईमेल से खाता पहले से है',
+    'auth_err_not_signed_in': 'कृपया पहले साइन इन करें।',
+    'auth_err_generic': 'कुछ गड़बड़ हुई। फिर से कोशिश करें।',
+    'voice_tap_to_speak': 'माइक दबाएँ और बोलें',
+    'voice_listening': 'सुन रहे हैं…',
+    'voice_translating': 'अनुवाद हो रहा है…',
+    'voice_downloading': 'भाषा पैक डाउनलोड हो रहा है (एक बार)…',
+    'voice_heard': 'सुना',
+    'voice_unavailable': 'इस डिवाइस पर आवाज़ इनपुट उपलब्ध नहीं है',
+    'voice_permission_denied': 'माइक्रोफ़ोन की अनुमति नहीं मिली',
+    'voice_nothing_heard': 'कुछ सुनाई नहीं दिया। फिर से कोशिश करें।',
+    'voice_translate_unavailable': 'अनुवाद केवल Android / iOS पर काम करता है। हिंदी पाठ दिखाया जा रहा है।',
+
+    'payment_produce': 'उपज',
+    'payment_agreed_price': 'सहमति मूल्य',
+    'payment_gross_sale_value': 'कुल बिक्री मूल्य',
+    'payment_transport_cost': 'परिवहन लागत',
+    'payment_method_label': 'भुगतान का तरीका',
+    'payment_method_bank_transfer': 'सीधा बैंक ट्रांसफ़र',
+    'payment_transport_pending': 'अभी तय नहीं',
+
+    'payment_step_delivery_verified': 'डिलीवरी सत्यापित',
+    'payment_step_initiated': 'भुगतान शुरू',
+    'payment_step_received': 'भुगतान प्राप्त',
+    'payment_awaiting_delivery': 'उपज पहुँचने और सत्यापित होने के बाद भुगतान शुरू होता है।',
+
+    'not_arranged': 'तय नहीं',
+    'not_scheduled': 'निर्धारित नहीं',
+    'not_calculated': 'गणना नहीं हुई',
+    'not_specified': 'नहीं बताया गया',
+
   };
 
   void _loadBuiltInStrings() {
@@ -746,6 +894,10 @@ class AppLocalizations {
   }
 
   /// Loads strings from asset JSON files if available, merging them into memory.
+  ///
+  /// Not called by the delegate any more (see [_AppLocalizationsDelegate.load]).
+  /// Kept for the case where translations should be shipped as data instead of
+  /// being compiled in; call it before showing the UI if you re-enable it.
   Future<bool> loadJsonAsset() async {
     try {
       final jsonString = await rootBundle
@@ -796,10 +948,14 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  Future<AppLocalizations> load(Locale locale) async {
-    final localizations = AppLocalizations(locale);
-    await localizations.loadJsonAsset();
-    return localizations;
+  Future<AppLocalizations> load(Locale locale) {
+    // Synchronous on purpose. The built-in dictionaries above already hold
+    // every key (assets/lang/*.json is kept in sync as a copy), so there is
+    // nothing to await. An async load makes Localizations render an empty
+    // frame while the future resolves — the screen flashes blank on every
+    // language switch, and in widget tests nothing renders at all because
+    // asset I/O does not complete inside the test's fake-async zone.
+    return SynchronousFuture<AppLocalizations>(AppLocalizations(locale));
   }
 
   @override

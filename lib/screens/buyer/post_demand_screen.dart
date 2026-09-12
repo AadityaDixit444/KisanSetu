@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/demand_service.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/voice_text_field.dart';
 import '../../localization/language_scope.dart';
 import '../../widgets/language_toggle_button.dart';
 
@@ -97,7 +98,7 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(context.tr('msg_demand_broadcasted')),
           backgroundColor: AppColors.primary,
         ),
@@ -129,7 +130,7 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
       appBar: AppBar(
         title: Text(context.tr('post_demand_title')),
         actions: const [
-          Center(child: LanguageToggleButton(isLightSurface: false)),
+          Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           SizedBox(width: 8),
         ],
       ),
@@ -157,7 +158,7 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                             const Divider(height: 24, color: AppColors.outlineVariant),
                             DropdownButtonFormField<String>(
                               value: _selectedCrop,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: context.tr('commodity_crop'),
                                 prefixIcon: Icon(Icons.agriculture_rounded),
                               ),
@@ -172,7 +173,7 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                             TextFormField(
                               controller: _quantityController,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: context.tr('required_volume_qtl'),
                                 prefixIcon: Icon(Icons.scale_rounded),
                               ),
@@ -186,7 +187,7 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                             const SizedBox(height: 14),
                             DropdownButtonFormField<String>(
                               value: _selectedQuality,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: context.tr('target_quality_standard'),
                                 prefixIcon: Icon(Icons.verified_outlined),
                               ),
@@ -201,7 +202,7 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                             TextFormField(
                               controller: _targetPriceController,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: context.tr('target_buying_price'),
                                 prefixIcon: Icon(Icons.currency_rupee_rounded),
                               ),
@@ -213,9 +214,10 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                               },
                             ),
                             const SizedBox(height: 14),
-                            TextFormField(
+                            // Mic button: speak the location (Hindi or English)
+                            VoiceTextField(
                               controller: _locationController,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: context.tr('delivery_location_depot'),
                                 prefixIcon: Icon(Icons.location_on_outlined),
                                 hintText: context.tr('hint_delivery_location'),
@@ -230,7 +232,7 @@ class _PostDemandScreenState extends State<PostDemandScreen> {
                               borderRadius: BorderRadius.circular(10),
                               onTap: _selectDate,
                               child: InputDecorator(
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   labelText: context.tr('required_by_date'),
                                   prefixIcon: Icon(Icons.calendar_today_outlined),
                                 ),

@@ -184,7 +184,7 @@ class _DemandLotSelectionScreenState
       appBar: AppBar(
         title: Text(context.tr('select_lot_title')),
         actions: [
-          const Center(child: LanguageToggleButton(isLightSurface: false)),
+          const Center(widthFactor: 1, child: LanguageToggleButton(isLightSurface: false)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: context.tr('refresh_lots'),
@@ -231,7 +231,7 @@ class _DemandLotSelectionScreenState
                                     borderRadius:
                                         BorderRadius.circular(6),
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     context.tr('active_demand_badge'),
                                     style: TextStyle(
                                       fontSize: 11,

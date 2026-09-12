@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../services/profile_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/language_toggle_button.dart';
+import 'auth/auth_gate.dart';
 import 'buyer/buyer_dashboard.dart';
 import 'farmer_dashboard.dart';
 
@@ -30,18 +31,16 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     });
 
     try {
-      if (_authService.currentUser == null) {
-        await _authService.signInAnonymously();
+      if (!_authService.isSignedIn) {
+        throw Exception(context.tr('auth_err_not_signed_in'));
       }
 
       await _profileService.createProfileIfMissing(role: role);
 
       if (!mounted) return;
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => targetDashboard),
-      );
+      // Replace the stack: Back must not return to the role picker.
+      AuthFlow.goToScreen(context, targetDashboard);
     } catch (error, stackTrace) {
       debugPrint('KisanSetu Auth/Profile Error: $error');
       debugPrint('KisanSetu StackTrace: $stackTrace');
@@ -73,10 +72,19 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        actions: const [
-          Padding(
+        actions: [
+          TextButton.icon(
+            onPressed: _isLoading ? null : () => AuthFlow.signOut(context),
+            icon: const Icon(Icons.logout_rounded, size: 18),
+            label: Text(context.tr('auth_sign_out')),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.onSurfaceVariant,
+            ),
+          ),
+          const Padding(
             padding: EdgeInsets.only(right: 16),
             child: Center(
+              widthFactor: 1,
               child: LanguageToggleButton(isLightSurface: true),
             ),
           ),

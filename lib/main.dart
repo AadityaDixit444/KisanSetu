@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'localization/app_localizations.dart';
 import 'localization/language_controller.dart';
 import 'localization/language_scope.dart';
-import 'screens/role_selection_screen.dart';
+import 'screens/auth/auth_gate.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
@@ -82,7 +82,7 @@ class _KisanSetuAppState extends State<KisanSetuApp> {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            home: const RoleSelectionScreen(),
+            home: const AuthGate(),
           );
         },
       ),

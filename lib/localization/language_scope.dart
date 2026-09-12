@@ -44,6 +44,11 @@ extension LanguageContextExtensions on BuildContext {
   String tr(String key, {Map<String, dynamic>? args}) =>
       AppLocalizations.of(this).translate(key, args: args);
 
+  /// Same as [tr] with the arguments passed positionally:
+  /// `context.trWithArgs('price_per_qtl', {'price': 2450})`.
+  String trWithArgs(String key, Map<String, dynamic> args) =>
+      AppLocalizations.of(this).translate(key, args: args);
+
   /// Access the active [LanguageController].
   LanguageController get languageController => LanguageScope.of(this);
 
