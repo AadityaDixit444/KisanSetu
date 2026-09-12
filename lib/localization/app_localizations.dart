@@ -453,6 +453,31 @@ class AppLocalizations {
     'not_calculated': 'Not calculated',
     'not_specified': 'Not specified',
 
+    // --- From Aaditya's local Hindi pass ---
+    'my_produce_lots': 'My Produce Lots',
+    'listed_lots': 'Listed Lots',
+    'track_lot_availability': 'Track real-time lot availability, status, and evaluate market holding returns.',
+    'run_what_if_price_simulator': 'Run What-If Price Simulator',
+    'view_offers': 'View Offers',
+    'test_what_if_simulate_return': 'Test What-If / Simulate Return',
+    'post_new_lot': 'Post New Lot',
+    'quality_grade_label': 'Quality Grade',
+    'lot_details': 'Lot Details',
+    'lot_id': 'Lot ID',
+    'available_from': 'Available From',
+    'quantity': 'Quantity',
+    'expected_price': 'Expected Price',
+    'location': 'Location',
+    'market_intelligence': 'Market Intelligence',
+    'market_rate': 'Market Rate',
+    'live_data': 'Live Data',
+    'no_market_record': 'No market record is available for {crop} at {market}.',
+    'recommendation_based_on': 'Based on current price movement and buyer demand',
+    'what_if_price_simulator': 'What-If Price Simulator',
+    'recent_mandi_movement': 'Recent Mandi movement',
+    'harvest_lot_volume': 'Harvest Lot Volume (Quintals)',
+    'cost_assumptions': '• Transport: ₹2,500 flat per haulage\n• Storage (Hold 7d): ₹100/quintal\n• Storage (Hold 15d): ₹200/quintal',
+
   };
 
   static const Map<String, String> _hiStrings = {
@@ -882,6 +907,31 @@ class AppLocalizations {
     'not_scheduled': 'निर्धारित नहीं',
     'not_calculated': 'गणना नहीं हुई',
     'not_specified': 'नहीं बताया गया',
+
+    // --- From Aaditya's local Hindi pass ---
+    'my_produce_lots': 'मेरे उत्पाद लॉट',
+    'listed_lots': 'सूचीबद्ध लॉट',
+    'track_lot_availability': 'लॉट की उपलब्धता, स्थिति और बाजार में रोककर रखने से मिलने वाले रिटर्न को ट्रैक करें।',
+    'run_what_if_price_simulator': 'क्या-अगर मूल्य सिम्युलेटर चलाएँ',
+    'view_offers': 'प्रस्ताव देखें',
+    'test_what_if_simulate_return': 'क्या-अगर परीक्षण / रिटर्न सिमुलेट करें',
+    'post_new_lot': 'नया लॉट पोस्ट करें',
+    'quality_grade_label': 'गुणवत्ता ग्रेड',
+    'lot_details': 'लॉट विवरण',
+    'lot_id': 'लॉट आईडी',
+    'available_from': 'उपलब्ध तिथि',
+    'quantity': 'मात्रा',
+    'expected_price': 'अपेक्षित मूल्य',
+    'location': 'स्थान',
+    'market_intelligence': 'बाजार जानकारी',
+    'market_rate': 'बाजार दर',
+    'live_data': 'लाइव डेटा',
+    'no_market_record': '{crop} के लिए {market} पर बाजार का कोई रिकॉर्ड उपलब्ध नहीं है।',
+    'recommendation_based_on': 'वर्तमान मूल्य परिवर्तन और खरीदारों की मांग के आधार पर',
+    'what_if_price_simulator': 'क्या-अगर मूल्य सिम्युलेटर',
+    'recent_mandi_movement': 'हालिया मंडी गतिविधि',
+    'harvest_lot_volume': 'फसल लॉट मात्रा (क्विंटल)',
+    'cost_assumptions': '• परिवहन: प्रति ढुलाई ₹2,500\n• भंडारण (7 दिन रोकें): ₹100/क्विंटल\n• भंडारण (15 दिन रोकें): ₹200/क्विंटल',
 
   };
 
