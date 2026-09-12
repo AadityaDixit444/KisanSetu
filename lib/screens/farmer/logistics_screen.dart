@@ -102,10 +102,6 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
     }
   }
 
-  String _capitalize(String text) {
-    if (text.isEmpty) return text;
-    return text[0].toUpperCase() + text.substring(1);
-  }
 
   @override
   Widget build(BuildContext context) {
